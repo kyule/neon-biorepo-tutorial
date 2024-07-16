@@ -11,17 +11,36 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Learning Objectives
 
-In this tutorial, we will learn how to: 
+In this tutorial, we will use NEON small mammals as an example to learn how to: 
 
-1. Explore DarwinCore records downloaded from the NEON Biorepository data portal. www.biorepo.neonscience.org
+1. Explore DarwinCore records downloaded from the NEON Biorepository data portal: https://biorepo.neonscience.org
 
-2. Download associated NEON data from the main NEON data portal using the NEON API.
+2. Summarize NEON Biorepository sample availability based on spatial, temporal, and taxonomic factors.
 
-3. Connect NEON Biorepository sample data to 
+3. Download related data from the main NEON data portal using the neonUtilities R package.
+
+3. Join NEON data to associated sample data.
+
+4. Compare NEON Biorepository specimen data to field collected data.
+
+5. Develop a list of samples based on analysis of sample-associated field data.
+
+## Background information
+
+The NEON Biorepository is located at Arizona State University and serves as the primary repository for NEON samples and specimens collected across all 81 NEON field sites. 
+
+The NEON Biorepository data portal allows users to search and download records associated with NEON samples and specimens, request samples and specimens for research, and publish sample-associated data. The NEON Biorepository data portal is built on open-source Symbiota software. Symbiota is the most frequently used software in North America for managing natural history collections records. Learn more about Symbiota data portals at https://symbiota.org/
+
+Symbiota portals publish sample, specimen, and observation data following Darwin Core Standard developed by Biodiversity Information Standards (TDWG). This data standard is a stable, straightforward, and flexible framework for compiling biodiversity data from varied sources. Learn more at https://dwc.tdwg.org/
+
+
+
 
 ## Getting Started
 
-```{r set up}
+First, we want to clear out our workspace and load the required packages.
+
+```{r set up, message=FALSE}
 # clean out workspace
 
 #rm(list = ls()) # OPTIONAL - clear out your environment

@@ -359,28 +359,56 @@ display: none;
 
 <div id="learning-objectives" class="section level2">
 <h2>Learning Objectives</h2>
+<p>In this tutorial, we will use NEON small mammals as an example to
+learn how to:</p>
+<ol style="list-style-type: decimal">
+<li><p>Explore DarwinCore records downloaded from the NEON Biorepository
+data portal: <a href="https://biorepo.neonscience.org" class="uri">https://biorepo.neonscience.org</a></p></li>
+<li><p>Summarize NEON Biorepository sample availability based on
+spatial, temporal, and taxonomic factors.</p></li>
+<li><p>Download related data from the main NEON data portal using the
+neonUtilities R package.</p></li>
+<li><p>Join NEON data to associated sample data.</p></li>
+<li><p>Compare NEON Biorepository specimen data to field collected
+data.</p></li>
+<li><p>Develop a list of samples based on analysis of sample-associated
+field data.</p></li>
+</ol>
+</div>
+<div id="background-information" class="section level2">
+<h2>Background information</h2>
+<p>The NEON Biorepository is located at Arizona State University and
+serves as the primary repository for NEON samples and specimens
+collected across all 81 NEON field sites.</p>
+<p>The NEON Biorepository data portal allows users to search and
+download records associated with NEON samples and specimens, request
+samples and specimens for research, and publish sample-associated data.
+The NEON Biorepository data portal is built on open-source Symbiota
+software. Symbiota is the most frequently used software in North America
+for managing natural history collections records. Learn more about
+Symbiota data portals at <a href="https://symbiota.org/" class="uri">https://symbiota.org/</a></p>
+<p>Symbiota portals publish sample, specimen, and observation data
+following Darwin Core Standard developed by Biodiversity Information
+Standards (TDWG). This data standard is a stable, straightforward, and
+flexible framework for compiling biodiversity data from varied sources.
+Learn more at <a href="https://dwc.tdwg.org/" class="uri">https://dwc.tdwg.org/</a></p>
 </div>
 <div id="getting-started" class="section level2">
 <h2>Getting Started</h2>
-<p>Load required packages.</p>
-<p>```{r packages} # clean out workspace</p>
-<p>#rm(list = ls()) # OPTIONAL - clear out your environment #gc() #
-Uncomment these lines if desired</p>
-</div>
-<div id="load-packages" class="section level1">
-<h1>load packages</h1>
-<p>library(tidyverse) library(neonUtilities) library(vegan)
-library(ecocomDP)</p>
-</div>
-<div id="source-.r-file-with-my-neon_token" class="section level1">
-<h1>source .r file with my NEON_TOKEN</h1>
-</div>
-<div id="sourcemy_neon_token.r-optional---load-neon-token" class="section level1">
-<h1>source(“my_neon_token.R”) # OPTIONAL - load NEON token</h1>
-</div>
-<div id="see-httpswww.neonscience.orgneon-api-tokens-tutorial" class="section level1">
-<h1>See: <a href="https://www.neonscience.org/neon-api-tokens-tutorial" class="uri">https://www.neonscience.org/neon-api-tokens-tutorial</a></h1>
-<p>```{r packages}</p>
+<p>First, we want to clear out our workspace and load the required
+packages.</p>
+<pre class="r"><code># clean out workspace
+
+#rm(list = ls()) # OPTIONAL - clear out your environment
+#gc()            # Uncomment these lines if desired
+
+# load packages
+library(tidyverse)
+library(neonUtilities)
+
+# source .r file with my NEON_TOKEN
+# source(&quot;my_neon_token.R&quot;) # OPTIONAL - load NEON token
+# See: https://www.neonscience.org/neon-api-tokens-tutorial</code></pre>
 </div>
 
 
