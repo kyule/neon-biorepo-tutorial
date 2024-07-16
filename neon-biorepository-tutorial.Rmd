@@ -38,7 +38,7 @@ Symbiota portals publish sample, specimen, and observation data following Darwin
 
 ## Getting Started
 
-First, we want to clear out our workspace and load the required packages.
+First, we want to clear out our workspace and load the required packages. If you do not have the required packages installed previously do so with the install.packages() function.
 
 ```{r set up, message=FALSE}
 # clean out workspace
@@ -49,10 +49,16 @@ First, we want to clear out our workspace and load the required packages.
 # load packages
 library(tidyverse)
 library(neonUtilities)
+library(Rcurl)
 
 # source .r file with my NEON_TOKEN
 # source("my_neon_token.R") # OPTIONAL - load NEON token
 # See: https://www.neonscience.org/neon-api-tokens-tutorial
 
 ```
+
+## Load NEON Biorepository search results
+
+Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. These results 
+
 
