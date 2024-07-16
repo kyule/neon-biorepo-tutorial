@@ -29,18 +29,15 @@ In this tutorial, we will use NEON small mammals as an example to learn how to:
 
 The NEON Biorepository is located at Arizona State University and serves as the primary repository for NEON samples and specimens collected across all 81 NEON field sites. 
 
-The NEON Biorepository data portal allows users to search and download records associated with NEON samples and specimens, request samples and specimens for research, and publish sample-associated data. The NEON Biorepository data portal is built on open-source Symbiota software. Symbiota is the most frequently used software in North America for managing natural history collections records. Learn more about Symbiota data portals at https://symbiota.org/
+The NEON Biorepository data portal allows users to search and download records associated with NEON samples and specimens, request samples and specimens for research, and publish sample-associated data. The NEON Biorepository data portal is built on open-source *Symbiota* software. *Symbiota* is the most frequently used software in North America for managing natural history collections records. Learn more about *Symbiota* data portals at https://symbiota.org/
 
-Symbiota portals publish sample, specimen, and observation data following Darwin Core Standard developed by Biodiversity Information Standards (TDWG). This data standard is a stable, straightforward, and flexible framework for compiling biodiversity data from varied sources. Learn more at https://dwc.tdwg.org/
-
-
-
+Symbiota portals publish sample, specimen, and observation data following *Darwin Core Standard* developed by Biodiversity Information Standards (TDWG). This data standard is a stable, straightforward, and flexible framework for compiling biodiversity data from varied sources. Learn more at https://dwc.tdwg.org/
 
 ## Getting Started
 
-First, we want to clear out our workspace and load the required packages. If you do not have the required packages installed previously do so with the install.packages() function.
+First, we want to clear out our workspace and load the required packages. If you do not have the required packages installed previously do so with the `install.packages()` function.
 
-```{r set up, message=FALSE}
+```{r set up, message=FALSE, warning=FALSE}
 # clean out workspace
 
 #rm(list = ls()) # OPTIONAL - clear out your environment
@@ -49,7 +46,7 @@ First, we want to clear out our workspace and load the required packages. If you
 # load packages
 library(tidyverse)
 library(neonUtilities)
-library(Rcurl)
+library(curl)
 
 # source .r file with my NEON_TOKEN
 # source("my_neon_token.R") # OPTIONAL - load NEON token
@@ -59,6 +56,18 @@ library(Rcurl)
 
 ## Load NEON Biorepository search results
 
-Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. These results 
+Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The full results are located in the Github repository https://github.com/kyule/neon-biorepo-tutorial and represent a search for all _Peromyscus leucopus_ samples archived at the NEON Biorepository as of 2024-07-16.
+
+```{r load data, message=FALSE, warning=FALSE}
+biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_leucopus_20240716_DwCRecords/occurrences.csv")
+```
+
+Let's look at what information is included in a DarwinCore occurrence record.
+
+```{r investigate},message=FALSE}
+# What variables exist for the records?
+
+names(biorepo)
 
 
+```

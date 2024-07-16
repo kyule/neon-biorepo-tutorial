@@ -383,20 +383,21 @@ collected across all 81 NEON field sites.</p>
 <p>The NEON Biorepository data portal allows users to search and
 download records associated with NEON samples and specimens, request
 samples and specimens for research, and publish sample-associated data.
-The NEON Biorepository data portal is built on open-source Symbiota
-software. Symbiota is the most frequently used software in North America
-for managing natural history collections records. Learn more about
-Symbiota data portals at <a href="https://symbiota.org/" class="uri">https://symbiota.org/</a></p>
+The NEON Biorepository data portal is built on open-source
+<em>Symbiota</em> software. <em>Symbiota</em> is the most frequently
+used software in North America for managing natural history collections
+records. Learn more about <em>Symbiota</em> data portals at <a href="https://symbiota.org/" class="uri">https://symbiota.org/</a></p>
 <p>Symbiota portals publish sample, specimen, and observation data
-following Darwin Core Standard developed by Biodiversity Information
-Standards (TDWG). This data standard is a stable, straightforward, and
-flexible framework for compiling biodiversity data from varied sources.
-Learn more at <a href="https://dwc.tdwg.org/" class="uri">https://dwc.tdwg.org/</a></p>
+following <em>Darwin Core Standard</em> developed by Biodiversity
+Information Standards (TDWG). This data standard is a stable,
+straightforward, and flexible framework for compiling biodiversity data
+from varied sources. Learn more at <a href="https://dwc.tdwg.org/" class="uri">https://dwc.tdwg.org/</a></p>
 </div>
 <div id="getting-started" class="section level2">
 <h2>Getting Started</h2>
 <p>First, we want to clear out our workspace and load the required
-packages.</p>
+packages. If you do not have the required packages installed previously
+do so with the <code>install.packages()</code> function.</p>
 <pre class="r"><code># clean out workspace
 
 #rm(list = ls()) # OPTIONAL - clear out your environment
@@ -405,10 +406,20 @@ packages.</p>
 # load packages
 library(tidyverse)
 library(neonUtilities)
+library(curl)
 
 # source .r file with my NEON_TOKEN
 # source(&quot;my_neon_token.R&quot;) # OPTIONAL - load NEON token
 # See: https://www.neonscience.org/neon-api-tokens-tutorial</code></pre>
+</div>
+<div id="load-neon-biorepository-search-results" class="section level2">
+<h2>Load NEON Biorepository search results</h2>
+<p>Here, we read in a csv file of occurrence records downloaded from the
+NEON Biorepository data portal. The full results are located in the
+Github repository <a href="https://github.com/kyule/neon-biorepo-tutorial" class="uri">https://github.com/kyule/neon-biorepo-tutorial</a> and
+represent a search for all <em>Peromyscus leucopus</em> samples archived
+at the NEON Biorepository as of 2024-07-16.</p>
+<pre class="r"><code>biorepo&lt;-read.csv(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_leucopus_20240716_DwCRecords/occurrences.csv&quot;)</code></pre>
 </div>
 
 
