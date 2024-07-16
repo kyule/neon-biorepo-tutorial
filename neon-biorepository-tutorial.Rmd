@@ -1,0 +1,39 @@
+---
+title: "NEON Biorepository Data Tutorial"
+author: "Kelsey Yule"
+date: "2024-07-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Learning Objectives
+
+In this tutorial, we will learn how to: 
+
+1. Explore DarwinCore records downloaded from the NEON Biorepository data portal. www.biorepo.neonscience.org
+
+2. Download associated NEON data from the main NEON data portal using the NEON API.
+
+3. Connect NEON Biorepository sample data to 
+
+## Getting Started
+
+```{r set up}
+# clean out workspace
+
+#rm(list = ls()) # OPTIONAL - clear out your environment
+#gc()            # Uncomment these lines if desired
+
+# load packages
+library(tidyverse)
+library(neonUtilities)
+
+# source .r file with my NEON_TOKEN
+# source("my_neon_token.R") # OPTIONAL - load NEON token
+# See: https://www.neonscience.org/neon-api-tokens-tutorial
+
+```
+
