@@ -11,7 +11,7 @@
 
 <meta name="author" content="Kelsey Yule" />
 
-<meta name="date" content="2024-07-16" />
+<meta name="date" content="2024-07-30" />
 
 <title>NEON Biorepository Data Tutorial</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">NEON Biorepository Data Tutorial</h1>
 <h4 class="author">Kelsey Yule</h4>
-<h4 class="date">2024-07-16</h4>
+<h4 class="date">2024-07-30</h4>
 
 </div>
 
@@ -373,6 +373,17 @@ neonUtilities R package.</p></li>
 data.</p></li>
 <li><p>Develop a list of samples based on analysis of sample-associated
 field data.</p></li>
+</ol>
+</div>
+<div id="research-questions" class="section level2">
+<h2>Research questions</h2>
+<ol style="list-style-type: decimal">
+<li><p>How do NEON <em>field</em> and <em>Biorepository</em>
+measurements of deermice (<em>Peromyscus</em>) <em>body masses</em>
+compare?</p></li>
+<li><p>Can we obtain a <em>suitable sample list</em> to study 5 sets of
+paired DNA and fecal samples from male <em>Peromyscus leucopus</em>
+individuals at each of 10 NEON field sites?</p></li>
 </ol>
 </div>
 <div id="background-information" class="section level2">
@@ -400,8 +411,7 @@ packages. If you do not have the required packages installed previously
 do so with the <code>install.packages()</code> function.</p>
 <pre class="r"><code># clean out workspace
 
-#rm(list = ls()) # OPTIONAL - clear out your environment
-#gc()            # Uncomment these lines if desired
+# rm(list = ls()) # OPTIONAL - clear out your environment
 
 # load packages
 library(tidyverse)
@@ -412,16 +422,70 @@ library(curl)
 # source(&quot;my_neon_token.R&quot;) # OPTIONAL - load NEON token
 # See: https://www.neonscience.org/neon-api-tokens-tutorial</code></pre>
 </div>
-<div id="load-neon-biorepository-search-results" class="section level2">
-<h2>Load NEON Biorepository search results</h2>
+<div id="load-and-explore-neon-biorepository-data" class="section level2">
+<h2>Load and explore NEON Biorepository data</h2>
 <p>Here, we read in a csv file of occurrence records downloaded from the
 NEON Biorepository data portal. The full results are located in the
 Github repository <a href="https://github.com/kyule/neon-biorepo-tutorial" class="uri">https://github.com/kyule/neon-biorepo-tutorial</a> and
 represent a search for all <em>Peromyscus leucopus</em> samples archived
-at the NEON Biorepository as of 2024-07-16.</p>
-<pre class="r"><code>biorepo&lt;-read.csv(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_leucopus_20240716_DwCRecords/occurrences.csv&quot;)</code></pre>
+at the NEON Biorepository as of 2024-07-30.</p>
+<pre class="r"><code>biorepo&lt;-read.csv(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_leucopus_20240730_DwCRecords/occurrences.csv&quot;)</code></pre>
 <p>Let’s look at what information is included in a DarwinCore occurrence
 record.</p>
+<pre class="r"><code># What variables exist for the records?
+
+names(biorepo)</code></pre>
+<pre><code>##  [1] &quot;id&quot;                             &quot;institutionCode&quot;               
+##  [3] &quot;collectionCode&quot;                 &quot;ownerInstitutionCode&quot;          
+##  [5] &quot;basisOfRecord&quot;                  &quot;occurrenceID&quot;                  
+##  [7] &quot;catalogNumber&quot;                  &quot;otherCatalogNumbers&quot;           
+##  [9] &quot;higherClassification&quot;           &quot;kingdom&quot;                       
+## [11] &quot;phylum&quot;                         &quot;class&quot;                         
+## [13] &quot;order&quot;                          &quot;family&quot;                        
+## [15] &quot;scientificName&quot;                 &quot;taxonID&quot;                       
+## [17] &quot;scientificNameAuthorship&quot;       &quot;genus&quot;                         
+## [19] &quot;subgenus&quot;                       &quot;specificEpithet&quot;               
+## [21] &quot;verbatimTaxonRank&quot;              &quot;infraspecificEpithet&quot;          
+## [23] &quot;taxonRank&quot;                      &quot;identifiedBy&quot;                  
+## [25] &quot;dateIdentified&quot;                 &quot;identificationReferences&quot;      
+## [27] &quot;identificationRemarks&quot;          &quot;taxonRemarks&quot;                  
+## [29] &quot;identificationQualifier&quot;        &quot;typeStatus&quot;                    
+## [31] &quot;recordedBy&quot;                     &quot;associatedCollectors&quot;          
+## [33] &quot;recordNumber&quot;                   &quot;eventDate&quot;                     
+## [35] &quot;eventDate2&quot;                     &quot;year&quot;                          
+## [37] &quot;month&quot;                          &quot;day&quot;                           
+## [39] &quot;startDayOfYear&quot;                 &quot;endDayOfYear&quot;                  
+## [41] &quot;verbatimEventDate&quot;              &quot;occurrenceRemarks&quot;             
+## [43] &quot;habitat&quot;                        &quot;substrate&quot;                     
+## [45] &quot;verbatimAttributes&quot;             &quot;fieldNumber&quot;                   
+## [47] &quot;eventID&quot;                        &quot;informationWithheld&quot;           
+## [49] &quot;dataGeneralizations&quot;            &quot;dynamicProperties&quot;             
+## [51] &quot;associatedOccurrences&quot;          &quot;associatedSequences&quot;           
+## [53] &quot;associatedTaxa&quot;                 &quot;reproductiveCondition&quot;         
+## [55] &quot;establishmentMeans&quot;             &quot;cultivationStatus&quot;             
+## [57] &quot;lifeStage&quot;                      &quot;sex&quot;                           
+## [59] &quot;individualCount&quot;                &quot;samplingProtocol&quot;              
+## [61] &quot;preparations&quot;                   &quot;locationID&quot;                    
+## [63] &quot;continent&quot;                      &quot;waterBody&quot;                     
+## [65] &quot;islandGroup&quot;                    &quot;island&quot;                        
+## [67] &quot;country&quot;                        &quot;stateProvince&quot;                 
+## [69] &quot;county&quot;                         &quot;municipality&quot;                  
+## [71] &quot;locality&quot;                       &quot;locationRemarks&quot;               
+## [73] &quot;localitySecurity&quot;               &quot;localitySecurityReason&quot;        
+## [75] &quot;decimalLatitude&quot;                &quot;decimalLongitude&quot;              
+## [77] &quot;geodeticDatum&quot;                  &quot;coordinateUncertaintyInMeters&quot; 
+## [79] &quot;verbatimCoordinates&quot;            &quot;georeferencedBy&quot;               
+## [81] &quot;georeferenceProtocol&quot;           &quot;georeferenceSources&quot;           
+## [83] &quot;georeferenceVerificationStatus&quot; &quot;georeferenceRemarks&quot;           
+## [85] &quot;minimumElevationInMeters&quot;       &quot;maximumElevationInMeters&quot;      
+## [87] &quot;minimumDepthInMeters&quot;           &quot;maximumDepthInMeters&quot;          
+## [89] &quot;verbatimDepth&quot;                  &quot;verbatimElevation&quot;             
+## [91] &quot;disposition&quot;                    &quot;language&quot;                      
+## [93] &quot;recordEnteredBy&quot;                &quot;modified&quot;                      
+## [95] &quot;sourcePrimaryKey.dbpk&quot;          &quot;collID&quot;                        
+## [97] &quot;recordID&quot;                       &quot;references&quot;</code></pre>
+<p>Let’s explore the data in some fields of interest. for <em>Question
+1</em></p>
 <pre class="r"><code># What variables exist for the records?
 
 names(biorepo)</code></pre>

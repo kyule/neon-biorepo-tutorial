@@ -25,6 +25,12 @@ In this tutorial, we will use NEON small mammals as an example to learn how to:
 
 5. Develop a list of samples based on analysis of sample-associated field data.
 
+## Research questions
+
+1. How do NEON **field** and **Biorepository** measurements of deermice (_Peromyscus_) **body masses** compare?
+
+2. Can we obtain a **suitable sample list** to study 5 sets of paired DNA and fecal samples from male _Peromyscus leucopus_ individuals at each of 10 NEON field sites?
+
 ## Background information
 
 The NEON Biorepository is located at Arizona State University and serves as the primary repository for NEON samples and specimens collected across all 81 NEON field sites. 
@@ -40,8 +46,7 @@ First, we want to clear out our workspace and load the required packages. If you
 ```{r set up, message=FALSE, warning=FALSE}
 # clean out workspace
 
-#rm(list = ls()) # OPTIONAL - clear out your environment
-#gc()            # Uncomment these lines if desired
+# rm(list = ls()) # OPTIONAL - clear out your environment
 
 # load packages
 library(tidyverse)
@@ -54,7 +59,7 @@ library(curl)
 
 ```
 
-## Load NEON Biorepository search results
+## Load and explore NEON Biorepository data
 
 Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The full results are located in the Github repository https://github.com/kyule/neon-biorepo-tutorial and represent a search for all _Peromyscus leucopus_ samples archived at the NEON Biorepository as of 2024-07-30.
 
@@ -65,6 +70,15 @@ biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/Perom
 Let's look at what information is included in a DarwinCore occurrence record.
 
 ```{r investigate},message=FALSE}
+# What variables exist for the records?
+
+names(biorepo)
+
+
+```
+We see that a large number of DarwinCore fields are present in the results that outline the who, what, where, when, and more of each sample. Let's explore the data in some fields of interest.
+
+```{r explorefields},message=FALSE}
 # What variables exist for the records?
 
 names(biorepo)
