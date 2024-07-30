@@ -78,15 +78,22 @@ Let's look at what information is included in a Darwin Core occurrence record.
 names(biorepo)
 
 ```
-We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. Let's explore the data in some fields of interest.
+We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. Let's explore the data in some fields of interest relative to our questions in order to get a rough understanding of sample availability.
 
 ```{r explorefields},message=FALSE}
 # How many samples are included in the results for each collection, species, and sex?
 
-biorepo %>% group_by(collectionCode,scientificName,sex) %>% count()
-
-
-
-
+sample_summary<-biorepo %>% 
+  group_by(collectionCode,scientificName,sex) %>% 
+  count()
 
 ```
+
+Different collectionCodes correspond to different sample types (e.g. "MAMC-BL" corresponds to the Mammal Blood Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=24). 
+
+We see several different taxa represented within the results. Most samples are associated with a species-level determination. A few are identified only to genus and others are given a "/" taxon. The latter represent uncertain identification between two species that are difficult to distinguish at a given field site. For example, individuals identified as _Peromyscus leucopus/maniculatus_ could not be confidently determined to be either _P. maniculatus_ or _P. leucopus_ in the field.
+
+## Obtain relevant NEON Terrestrial Observation System data
+
+In order to compare field and Biorepository measurements of body mass, we also need to obtain field data from the main NEON data portal.
+
