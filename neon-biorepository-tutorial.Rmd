@@ -35,9 +35,9 @@ In this tutorial, we will use NEON small mammals as an example to learn how to:
 
 The NEON Biorepository is located at Arizona State University and serves as the primary repository for NEON samples and specimens collected across all 81 NEON field sites. 
 
-The NEON Biorepository data portal allows users to search and download records associated with NEON samples and specimens, request samples and specimens for research, and publish sample-associated data. The NEON Biorepository data portal is built on open-source *Symbiota* software. *Symbiota* is the most frequently used software in North America for managing natural history collections records. Learn more about *Symbiota* data portals at https://symbiota.org/
+The NEON Biorepository data portal allows users to search and download records associated with NEON samples and specimens, request samples and specimens for research, and publish sample-associated data. The NEON Biorepository data portal is built on open-source **Symbiota** software. **Symbiota** is the most frequently used software in North America for managing natural history collections records. Learn more about **Symbiota** data portals at https://symbiota.org/
 
-Symbiota portals publish sample, specimen, and observation data following *Darwin Core Standard* developed by Biodiversity Information Standards (TDWG). This data standard is a stable, straightforward, and flexible framework for compiling biodiversity data from varied sources. Learn more at https://dwc.tdwg.org/
+Symbiota portals publish sample, specimen, and observation data following **Darwin Core Standard** developed by Biodiversity Information Standards (TDWG). This data standard is a stable, straightforward, and flexible framework for compiling biodiversity data from varied sources. Learn more at https://dwc.tdwg.org/
 
 ## Getting Started
 
@@ -52,10 +52,6 @@ First, we want to clear out our workspace and load the required packages. If you
 library(tidyverse)
 library(neonUtilities)
 library(curl)
-
-# source .r file with my NEON_TOKEN
-# source("my_neon_token.R") # OPTIONAL - load NEON token
-# See: https://www.neonscience.org/neon-api-tokens-tutorial
 
 ```
 
@@ -95,5 +91,29 @@ We see several different taxa represented within the results. Most samples are a
 
 ## Obtain relevant NEON Terrestrial Observation System data
 
-In order to compare field and Biorepository measurements of body mass, we also need to obtain field data from the main NEON data portal.
+In order to compare field and Biorepository measurements of body mass, we also need to obtain field data from the main NEON data portal. We will use the `neonUtilities` package to download all small mammal capture data from the main NEON data portal. This requires that we know the NEON data product ID for small mammals, which is DP1.10072.001: https://data.neonscience.org/data-products/DP1.10072.001
+
+The below code chunk allows you to download the data as of 2024-07-30 from the GitHub repository associated with this tutorial.
+
+```{r loadNeondata, message=FALSE, warning=FALSE}
+NEON<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata")))
+```
+The below code shows how you could download an up-to-date version of this data. We will not download new data today due to the time that would be required to do so. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following page: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
+
+
+
+```{r downloadDataNew},message=FALSE}
+
+# source .r file with my NEON_TOKEN
+# source("my_neon_token.R") # OPTIONAL - load NEON token
+# See: https://www.neonscience.org/neon-api-tokens-tutorial
+
+
+
+sample_summary<-biorepo %>% 
+  group_by(collectionCode,scientificName,sex) %>% 
+  count()
+
+```
+
 
