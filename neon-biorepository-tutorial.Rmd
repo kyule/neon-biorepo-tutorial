@@ -1,7 +1,7 @@
 ---
 title: "NEON Biorepository Data Tutorial"
 author: "Kelsey Yule"
-date: "2024-07-16"
+date: "2024-07-30"
 output: html_document
 ---
 
@@ -56,10 +56,10 @@ library(curl)
 
 ## Load NEON Biorepository search results
 
-Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The full results are located in the Github repository https://github.com/kyule/neon-biorepo-tutorial and represent a search for all _Peromyscus leucopus_ samples archived at the NEON Biorepository as of 2024-07-16.
+Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The full results are located in the Github repository https://github.com/kyule/neon-biorepo-tutorial and represent a search for all _Peromyscus leucopus_ samples archived at the NEON Biorepository as of 2024-07-30.
 
 ```{r load data, message=FALSE, warning=FALSE}
-biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_leucopus_20240716_DwCRecords/occurrences.csv")
+biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_leucopus_20240730_DwCRecords/occurrences.csv")
 ```
 
 Let's look at what information is included in a DarwinCore occurrence record.
