@@ -362,8 +362,8 @@ display: none;
 <p>In this tutorial, we will use NEON small mammals as an example to
 learn how to:</p>
 <ol style="list-style-type: decimal">
-<li><p>Explore DarwinCore records downloaded from the NEON Biorepository
-data portal: <a href="https://biorepo.neonscience.org" class="uri">https://biorepo.neonscience.org</a></p></li>
+<li><p>Explore Darwin Core records downloaded from the NEON
+Biorepository data portal: <a href="https://biorepo.neonscience.org" class="uri">https://biorepo.neonscience.org</a></p></li>
 <li><p>Summarize NEON Biorepository sample availability based on
 spatial, temporal, and taxonomic factors.</p></li>
 <li><p>Download related data from the main NEON data portal using the
@@ -378,12 +378,12 @@ field data.</p></li>
 <div id="research-questions" class="section level2">
 <h2>Research questions</h2>
 <ol style="list-style-type: decimal">
-<li><p>How do NEON <em>field</em> and <em>Biorepository</em>
-measurements of deermice (<em>Peromyscus</em>) <em>body masses</em>
-compare?</p></li>
-<li><p>Can we obtain a <em>suitable sample list</em> to study 5 sets of
-paired DNA and fecal samples from male <em>Peromyscus leucopus</em>
-individuals at each of 10 NEON field sites?</p></li>
+<li><p>How do NEON <strong>field</strong> and
+<strong>Biorepository</strong> measurements of deermice
+(<em>Peromyscus</em>) <strong>body masses</strong> compare?</p></li>
+<li><p>Can we obtain a <strong>suitable sample list</strong> to study 5
+sets of paired DNA and fecal samples from male <em>Peromyscus
+leucopus</em> individuals at each of 10 NEON field sites?</p></li>
 </ol>
 </div>
 <div id="background-information" class="section level2">
@@ -429,9 +429,11 @@ NEON Biorepository data portal. The full results are located in the
 Github repository <a href="https://github.com/kyule/neon-biorepo-tutorial" class="uri">https://github.com/kyule/neon-biorepo-tutorial</a> and
 represent a search for all <em>Peromyscus leucopus</em> samples archived
 at the NEON Biorepository as of 2024-07-30.</p>
+<p>Up to date results for the same search terms can be found at any time
+using the link: <a href="https://biorepo.neonscience.org/portal/collections/list.php?db=24%2C71%2C25%2C26%2C27%2C91%2C90%2C17%2C19%2C28&amp;includeothercatnum=1&amp;taxa=Peromyscus&amp;usethes=1&amp;taxontype=1" class="uri">https://biorepo.neonscience.org/portal/collections/list.php?db=24%2C71%2C25%2C26%2C27%2C91%2C90%2C17%2C19%2C28&amp;includeothercatnum=1&amp;taxa=Peromyscus&amp;usethes=1&amp;taxontype=1</a></p>
 <pre class="r"><code>biorepo&lt;-read.csv(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_leucopus_20240730_DwCRecords/occurrences.csv&quot;)</code></pre>
-<p>Let’s look at what information is included in a DarwinCore occurrence
-record.</p>
+<p>Let’s look at what information is included in a Darwin Core
+occurrence record.</p>
 <pre class="r"><code># What variables exist for the records?
 
 names(biorepo)</code></pre>
@@ -484,8 +486,9 @@ names(biorepo)</code></pre>
 ## [93] &quot;recordEnteredBy&quot;                &quot;modified&quot;                      
 ## [95] &quot;sourcePrimaryKey.dbpk&quot;          &quot;collID&quot;                        
 ## [97] &quot;recordID&quot;                       &quot;references&quot;</code></pre>
-<p>Let’s explore the data in some fields of interest. for <em>Question
-1</em></p>
+<p>We see that a large number of Darwin Core fields are present in the
+results that outline the who, what, where, when, and more of each
+sample. Let’s explore the data in some fields of interest.</p>
 <pre class="r"><code># What variables exist for the records?
 
 names(biorepo)</code></pre>
