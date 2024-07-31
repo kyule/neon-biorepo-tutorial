@@ -128,3 +128,18 @@ trap_data<-NEON$mam_pertrapnight
 names(trap_data)
 
 ```
+
+We are interested in the mammal trap-level data in order to match trapping events with records of Biorepository samples.
+
+
+```{r getTrapNightData},message=FALSE}
+
+# What's in a download?
+names(NEON)
+
+# Extract the "mam_pertrapnight" table
+trap_data<-NEON$mam_pertrapnight
+names(trap_data)
+
+```
+

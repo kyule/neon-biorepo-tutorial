@@ -490,9 +490,24 @@ our questions in order to get a rough understanding of sample
 availability.</p>
 <pre class="r"><code># How many samples are included in the results for each collection, species, and sex?
 
-sample_summary&lt;-biorepo %&gt;% 
+biorepo %&gt;% 
   group_by(collectionCode,scientificName,sex) %&gt;% 
   count()</code></pre>
+<pre><code>## # A tibble: 272 × 4
+## # Groups:   collectionCode, scientificName, sex [272]
+##    collectionCode scientificName          sex         n
+##    &lt;chr&gt;          &lt;chr&gt;                   &lt;chr&gt;   &lt;int&gt;
+##  1 MAMC-BL        Peromyscus              Female      1
+##  2 MAMC-BL        Peromyscus              Male       10
+##  3 MAMC-BL        Peromyscus              Unknown     1
+##  4 MAMC-BL        Peromyscus attwateri    Female      5
+##  5 MAMC-BL        Peromyscus attwateri    Male       14
+##  6 MAMC-BL        Peromyscus boylii       Female    233
+##  7 MAMC-BL        Peromyscus boylii       Male      264
+##  8 MAMC-BL        Peromyscus boylii       Unknown    12
+##  9 MAMC-BL        Peromyscus californicus Female      1
+## 10 MAMC-BL        Peromyscus eremicus     Female     21
+## # ℹ 262 more rows</code></pre>
 <p>Different collectionCodes correspond to different sample types
 (e.g. “MAMC-BL” corresponds to the Mammal Blood Sample Collection
 described here: <a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=24" class="uri">https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=24</a>).</p>
@@ -517,35 +532,119 @@ DP1.10072.001: <a href="https://data.neonscience.org/data-products/DP1.10072.001
 from the GitHub repository associated with this tutorial.</p>
 <pre class="r"><code>NEON&lt;-readRDS(gzcon(url(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata&quot;)))</code></pre>
 <p>The below code shows how you could download an up-to-date version of
-this data. We will not download new data today due to the time that
-would be required to do so. Note that we have chosen to include
-Provisional data for this exploratory analysis. To learn more about
-Release vs. Provisional NEON data and ensure that you choose the
-appropriate data for your purposes, visit the following page: <a href="https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial" class="uri">https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial</a>.</p>
-<pre class="r"><code># source .r file with my NEON_TOKEN
+this data. The code is commented out because we will not download new
+data today due to the time that would be required to do so. Note that we
+have chosen to include Provisional data for this exploratory analysis.
+To learn more about Release vs. Provisional NEON data and ensure that
+you choose the appropriate data for your purposes, visit the following
+link: <a href="https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial" class="uri">https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial</a>.</p>
+<pre class="r"><code>### source .r file with my NEON_TOKEN
 # source(&quot;my_neon_token.R&quot;) # OPTIONAL - load NEON token
 # See: https://www.neonscience.org/neon-api-tokens-tutorial
 
+### Use the loadByProduct function. Use ?loadByProduct to view the many other options that can be specified
 
-
-biorepo %&gt;% 
-  group_by(collectionCode,scientificName,sex) %&gt;% 
-  count()</code></pre>
-<pre><code>## # A tibble: 272 × 4
-## # Groups:   collectionCode, scientificName, sex [272]
-##    collectionCode scientificName          sex         n
-##    &lt;chr&gt;          &lt;chr&gt;                   &lt;chr&gt;   &lt;int&gt;
-##  1 MAMC-BL        Peromyscus              Female      1
-##  2 MAMC-BL        Peromyscus              Male       10
-##  3 MAMC-BL        Peromyscus              Unknown     1
-##  4 MAMC-BL        Peromyscus attwateri    Female      5
-##  5 MAMC-BL        Peromyscus attwateri    Male       14
-##  6 MAMC-BL        Peromyscus boylii       Female    233
-##  7 MAMC-BL        Peromyscus boylii       Male      264
-##  8 MAMC-BL        Peromyscus boylii       Unknown    12
-##  9 MAMC-BL        Peromyscus californicus Female      1
-## 10 MAMC-BL        Peromyscus eremicus     Female     21
-## # ℹ 262 more rows</code></pre>
+# NEON &lt;- loadByProduct(dpID=&quot;DP1.10072.001&quot;,
+#                   package=&quot;expanded&quot;,
+#                   include.provisional=TRUE,
+#                   token=NEON_TOKEN)</code></pre>
+<p>Let’s take a look at what is included in a NEON data product
+download. We will extract and focus on the table that has colated all of
+the records for individual traps.</p>
+<pre class="r"><code># What&#39;s in a download?
+names(NEON)</code></pre>
+<pre><code>##  [1] &quot;categoricalCodes_10072&quot;      &quot;citation_10072_PROVISIONAL&quot; 
+##  [3] &quot;citation_10072_RELEASE-2024&quot; &quot;issueLog_10072&quot;             
+##  [5] &quot;mam_identificationHistory&quot;   &quot;mam_perplotnight&quot;           
+##  [7] &quot;mam_pertrapnight&quot;            &quot;mam_voucher&quot;                
+##  [9] &quot;readme_10072&quot;                &quot;validation_10072&quot;           
+## [11] &quot;variables_10072&quot;</code></pre>
+<pre class="r"><code># Extract the &quot;mam_pertrapnight&quot; table
+trap_data&lt;-NEON$mam_pertrapnight
+names(trap_data)</code></pre>
+<pre><code>##  [1] &quot;uid&quot;                      &quot;nightuid&quot;                
+##  [3] &quot;namedLocation&quot;            &quot;domainID&quot;                
+##  [5] &quot;siteID&quot;                   &quot;plotID&quot;                  
+##  [7] &quot;trapCoordinate&quot;           &quot;plotType&quot;                
+##  [9] &quot;nlcdClass&quot;                &quot;decimalLatitude&quot;         
+## [11] &quot;decimalLongitude&quot;         &quot;geodeticDatum&quot;           
+## [13] &quot;coordinateUncertainty&quot;    &quot;elevation&quot;               
+## [15] &quot;elevationUncertainty&quot;     &quot;trapStatus&quot;              
+## [17] &quot;trapType&quot;                 &quot;collectDate&quot;             
+## [19] &quot;endDate&quot;                  &quot;tagID&quot;                   
+## [21] &quot;individualCode&quot;           &quot;taxonID&quot;                 
+## [23] &quot;scientificName&quot;           &quot;taxonRank&quot;               
+## [25] &quot;identificationQualifier&quot;  &quot;identificationReferences&quot;
+## [27] &quot;identificationHistoryID&quot;  &quot;voucherUpdate&quot;           
+## [29] &quot;nativeStatusCode&quot;         &quot;sex&quot;                     
+## [31] &quot;recapture&quot;                &quot;fate&quot;                    
+## [33] &quot;replacedTag&quot;              &quot;lifeStage&quot;               
+## [35] &quot;testes&quot;                   &quot;nipples&quot;                 
+## [37] &quot;pregnancyStatus&quot;          &quot;vagina&quot;                  
+## [39] &quot;hindfootLength&quot;           &quot;earLength&quot;               
+## [41] &quot;tailLength&quot;               &quot;totalLength&quot;             
+## [43] &quot;weight&quot;                   &quot;larvalTicksAttached&quot;     
+## [45] &quot;nymphalTicksAttached&quot;     &quot;adultTicksAttached&quot;      
+## [47] &quot;tickNumber&quot;               &quot;additionalParasites&quot;     
+## [49] &quot;frozenSamplePrepMethod&quot;   &quot;bloodSampleID&quot;           
+## [51] &quot;bloodSampleBarcode&quot;       &quot;bloodSampleMethod&quot;       
+## [53] &quot;fecalSampleID&quot;            &quot;fecalSampleBarcode&quot;      
+## [55] &quot;fecalSampleCondition&quot;     &quot;earSampleID&quot;             
+## [57] &quot;earSampleBarcode&quot;         &quot;hairSampleID&quot;            
+## [59] &quot;hairSampleBarcode&quot;        &quot;hairSampleContents&quot;      
+## [61] &quot;voucherSampleID&quot;          &quot;voucherSampleBarcode&quot;    
+## [63] &quot;measuredBy&quot;               &quot;recordedBy&quot;              
+## [65] &quot;remarks&quot;                  &quot;dataQF&quot;                  
+## [67] &quot;dataEntryRecordID&quot;        &quot;publicationDate&quot;         
+## [69] &quot;release&quot;</code></pre>
+<p>We are interested in the mammal trap-level data in order to match
+trapping events with records of Biorepository samples.</p>
+<pre class="r"><code># What&#39;s in a download?
+names(NEON)</code></pre>
+<pre><code>##  [1] &quot;categoricalCodes_10072&quot;      &quot;citation_10072_PROVISIONAL&quot; 
+##  [3] &quot;citation_10072_RELEASE-2024&quot; &quot;issueLog_10072&quot;             
+##  [5] &quot;mam_identificationHistory&quot;   &quot;mam_perplotnight&quot;           
+##  [7] &quot;mam_pertrapnight&quot;            &quot;mam_voucher&quot;                
+##  [9] &quot;readme_10072&quot;                &quot;validation_10072&quot;           
+## [11] &quot;variables_10072&quot;</code></pre>
+<pre class="r"><code># Extract the &quot;mam_pertrapnight&quot; table
+trap_data&lt;-NEON$mam_pertrapnight
+names(trap_data)</code></pre>
+<pre><code>##  [1] &quot;uid&quot;                      &quot;nightuid&quot;                
+##  [3] &quot;namedLocation&quot;            &quot;domainID&quot;                
+##  [5] &quot;siteID&quot;                   &quot;plotID&quot;                  
+##  [7] &quot;trapCoordinate&quot;           &quot;plotType&quot;                
+##  [9] &quot;nlcdClass&quot;                &quot;decimalLatitude&quot;         
+## [11] &quot;decimalLongitude&quot;         &quot;geodeticDatum&quot;           
+## [13] &quot;coordinateUncertainty&quot;    &quot;elevation&quot;               
+## [15] &quot;elevationUncertainty&quot;     &quot;trapStatus&quot;              
+## [17] &quot;trapType&quot;                 &quot;collectDate&quot;             
+## [19] &quot;endDate&quot;                  &quot;tagID&quot;                   
+## [21] &quot;individualCode&quot;           &quot;taxonID&quot;                 
+## [23] &quot;scientificName&quot;           &quot;taxonRank&quot;               
+## [25] &quot;identificationQualifier&quot;  &quot;identificationReferences&quot;
+## [27] &quot;identificationHistoryID&quot;  &quot;voucherUpdate&quot;           
+## [29] &quot;nativeStatusCode&quot;         &quot;sex&quot;                     
+## [31] &quot;recapture&quot;                &quot;fate&quot;                    
+## [33] &quot;replacedTag&quot;              &quot;lifeStage&quot;               
+## [35] &quot;testes&quot;                   &quot;nipples&quot;                 
+## [37] &quot;pregnancyStatus&quot;          &quot;vagina&quot;                  
+## [39] &quot;hindfootLength&quot;           &quot;earLength&quot;               
+## [41] &quot;tailLength&quot;               &quot;totalLength&quot;             
+## [43] &quot;weight&quot;                   &quot;larvalTicksAttached&quot;     
+## [45] &quot;nymphalTicksAttached&quot;     &quot;adultTicksAttached&quot;      
+## [47] &quot;tickNumber&quot;               &quot;additionalParasites&quot;     
+## [49] &quot;frozenSamplePrepMethod&quot;   &quot;bloodSampleID&quot;           
+## [51] &quot;bloodSampleBarcode&quot;       &quot;bloodSampleMethod&quot;       
+## [53] &quot;fecalSampleID&quot;            &quot;fecalSampleBarcode&quot;      
+## [55] &quot;fecalSampleCondition&quot;     &quot;earSampleID&quot;             
+## [57] &quot;earSampleBarcode&quot;         &quot;hairSampleID&quot;            
+## [59] &quot;hairSampleBarcode&quot;        &quot;hairSampleContents&quot;      
+## [61] &quot;voucherSampleID&quot;          &quot;voucherSampleBarcode&quot;    
+## [63] &quot;measuredBy&quot;               &quot;recordedBy&quot;              
+## [65] &quot;remarks&quot;                  &quot;dataQF&quot;                  
+## [67] &quot;dataEntryRecordID&quot;        &quot;publicationDate&quot;         
+## [69] &quot;release&quot;</code></pre>
 </div>
 
 
