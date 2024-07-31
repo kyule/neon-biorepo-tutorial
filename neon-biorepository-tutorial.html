@@ -395,14 +395,15 @@ collected across all 81 NEON field sites.</p>
 download records associated with NEON samples and specimens, request
 samples and specimens for research, and publish sample-associated data.
 The NEON Biorepository data portal is built on open-source
-<em>Symbiota</em> software. <em>Symbiota</em> is the most frequently
-used software in North America for managing natural history collections
-records. Learn more about <em>Symbiota</em> data portals at <a href="https://symbiota.org/" class="uri">https://symbiota.org/</a></p>
+<strong>Symbiota</strong> software. <strong>Symbiota</strong> is the
+most frequently used software in North America for managing natural
+history collections records. Learn more about <strong>Symbiota</strong>
+data portals at <a href="https://symbiota.org/" class="uri">https://symbiota.org/</a></p>
 <p>Symbiota portals publish sample, specimen, and observation data
-following <em>Darwin Core Standard</em> developed by Biodiversity
-Information Standards (TDWG). This data standard is a stable,
-straightforward, and flexible framework for compiling biodiversity data
-from varied sources. Learn more at <a href="https://dwc.tdwg.org/" class="uri">https://dwc.tdwg.org/</a></p>
+following <strong>Darwin Core Standard</strong> developed by
+Biodiversity Information Standards (TDWG). This data standard is a
+stable, straightforward, and flexible framework for compiling
+biodiversity data from varied sources. Learn more at <a href="https://dwc.tdwg.org/" class="uri">https://dwc.tdwg.org/</a></p>
 </div>
 <div id="getting-started" class="section level2">
 <h2>Getting Started</h2>
@@ -416,22 +417,18 @@ do so with the <code>install.packages()</code> function.</p>
 # load packages
 library(tidyverse)
 library(neonUtilities)
-library(curl)
-
-# source .r file with my NEON_TOKEN
-# source(&quot;my_neon_token.R&quot;) # OPTIONAL - load NEON token
-# See: https://www.neonscience.org/neon-api-tokens-tutorial</code></pre>
+library(curl)</code></pre>
 </div>
 <div id="load-and-explore-neon-biorepository-data" class="section level2">
 <h2>Load and explore NEON Biorepository data</h2>
 <p>Here, we read in a csv file of occurrence records downloaded from the
 NEON Biorepository data portal. The full results are located in the
 Github repository <a href="https://github.com/kyule/neon-biorepo-tutorial" class="uri">https://github.com/kyule/neon-biorepo-tutorial</a> and
-represent a search for all <em>Peromyscus leucopus</em> samples archived
-at the NEON Biorepository as of 2024-07-30.</p>
+represent a search for all <em>Peromyscus</em> samples archived at the
+NEON Biorepository as of 2024-07-30.</p>
 <p>Up to date results for the same search terms can be found at any time
 using the link: <a href="https://biorepo.neonscience.org/portal/collections/list.php?db=24%2C71%2C25%2C26%2C27%2C91%2C90%2C17%2C19%2C28&amp;includeothercatnum=1&amp;taxa=Peromyscus&amp;usethes=1&amp;taxontype=1" class="uri">https://biorepo.neonscience.org/portal/collections/list.php?db=24%2C71%2C25%2C26%2C27%2C91%2C90%2C17%2C19%2C28&amp;includeothercatnum=1&amp;taxa=Peromyscus&amp;usethes=1&amp;taxontype=1</a></p>
-<pre class="r"><code>biorepo&lt;-read.csv(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_leucopus_20240730_DwCRecords/occurrences.csv&quot;)</code></pre>
+<pre class="r"><code>biorepo&lt;-read.csv(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_20240730_DwCRecords/occurrences.csv&quot;)</code></pre>
 <p>Let’s look at what information is included in a Darwin Core
 occurrence record.</p>
 <pre class="r"><code># What variables exist for the records?
@@ -488,59 +485,67 @@ names(biorepo)</code></pre>
 ## [97] &quot;recordID&quot;                       &quot;references&quot;</code></pre>
 <p>We see that a large number of Darwin Core fields are present in the
 results that outline the who, what, where, when, and more of each
-sample. Let’s explore the data in some fields of interest.</p>
-<pre class="r"><code># What variables exist for the records?
+sample. Let’s explore the data in some fields of interest relative to
+our questions in order to get a rough understanding of sample
+availability.</p>
+<pre class="r"><code># How many samples are included in the results for each collection, species, and sex?
 
-names(biorepo)</code></pre>
-<pre><code>##  [1] &quot;id&quot;                             &quot;institutionCode&quot;               
-##  [3] &quot;collectionCode&quot;                 &quot;ownerInstitutionCode&quot;          
-##  [5] &quot;basisOfRecord&quot;                  &quot;occurrenceID&quot;                  
-##  [7] &quot;catalogNumber&quot;                  &quot;otherCatalogNumbers&quot;           
-##  [9] &quot;higherClassification&quot;           &quot;kingdom&quot;                       
-## [11] &quot;phylum&quot;                         &quot;class&quot;                         
-## [13] &quot;order&quot;                          &quot;family&quot;                        
-## [15] &quot;scientificName&quot;                 &quot;taxonID&quot;                       
-## [17] &quot;scientificNameAuthorship&quot;       &quot;genus&quot;                         
-## [19] &quot;subgenus&quot;                       &quot;specificEpithet&quot;               
-## [21] &quot;verbatimTaxonRank&quot;              &quot;infraspecificEpithet&quot;          
-## [23] &quot;taxonRank&quot;                      &quot;identifiedBy&quot;                  
-## [25] &quot;dateIdentified&quot;                 &quot;identificationReferences&quot;      
-## [27] &quot;identificationRemarks&quot;          &quot;taxonRemarks&quot;                  
-## [29] &quot;identificationQualifier&quot;        &quot;typeStatus&quot;                    
-## [31] &quot;recordedBy&quot;                     &quot;associatedCollectors&quot;          
-## [33] &quot;recordNumber&quot;                   &quot;eventDate&quot;                     
-## [35] &quot;eventDate2&quot;                     &quot;year&quot;                          
-## [37] &quot;month&quot;                          &quot;day&quot;                           
-## [39] &quot;startDayOfYear&quot;                 &quot;endDayOfYear&quot;                  
-## [41] &quot;verbatimEventDate&quot;              &quot;occurrenceRemarks&quot;             
-## [43] &quot;habitat&quot;                        &quot;substrate&quot;                     
-## [45] &quot;verbatimAttributes&quot;             &quot;fieldNumber&quot;                   
-## [47] &quot;eventID&quot;                        &quot;informationWithheld&quot;           
-## [49] &quot;dataGeneralizations&quot;            &quot;dynamicProperties&quot;             
-## [51] &quot;associatedOccurrences&quot;          &quot;associatedSequences&quot;           
-## [53] &quot;associatedTaxa&quot;                 &quot;reproductiveCondition&quot;         
-## [55] &quot;establishmentMeans&quot;             &quot;cultivationStatus&quot;             
-## [57] &quot;lifeStage&quot;                      &quot;sex&quot;                           
-## [59] &quot;individualCount&quot;                &quot;samplingProtocol&quot;              
-## [61] &quot;preparations&quot;                   &quot;locationID&quot;                    
-## [63] &quot;continent&quot;                      &quot;waterBody&quot;                     
-## [65] &quot;islandGroup&quot;                    &quot;island&quot;                        
-## [67] &quot;country&quot;                        &quot;stateProvince&quot;                 
-## [69] &quot;county&quot;                         &quot;municipality&quot;                  
-## [71] &quot;locality&quot;                       &quot;locationRemarks&quot;               
-## [73] &quot;localitySecurity&quot;               &quot;localitySecurityReason&quot;        
-## [75] &quot;decimalLatitude&quot;                &quot;decimalLongitude&quot;              
-## [77] &quot;geodeticDatum&quot;                  &quot;coordinateUncertaintyInMeters&quot; 
-## [79] &quot;verbatimCoordinates&quot;            &quot;georeferencedBy&quot;               
-## [81] &quot;georeferenceProtocol&quot;           &quot;georeferenceSources&quot;           
-## [83] &quot;georeferenceVerificationStatus&quot; &quot;georeferenceRemarks&quot;           
-## [85] &quot;minimumElevationInMeters&quot;       &quot;maximumElevationInMeters&quot;      
-## [87] &quot;minimumDepthInMeters&quot;           &quot;maximumDepthInMeters&quot;          
-## [89] &quot;verbatimDepth&quot;                  &quot;verbatimElevation&quot;             
-## [91] &quot;disposition&quot;                    &quot;language&quot;                      
-## [93] &quot;recordEnteredBy&quot;                &quot;modified&quot;                      
-## [95] &quot;sourcePrimaryKey.dbpk&quot;          &quot;collID&quot;                        
-## [97] &quot;recordID&quot;                       &quot;references&quot;</code></pre>
+sample_summary&lt;-biorepo %&gt;% 
+  group_by(collectionCode,scientificName,sex) %&gt;% 
+  count()</code></pre>
+<p>Different collectionCodes correspond to different sample types
+(e.g. “MAMC-BL” corresponds to the Mammal Blood Sample Collection
+described here: <a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=24" class="uri">https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=24</a>).</p>
+<p>We see several different taxa represented within the results. Most
+samples are associated with a species-level determination. A few are
+identified only to genus and others are given a “/” taxon. The latter
+represent uncertain identification between two species that are
+difficult to distinguish at a given field site. For example, individuals
+identified as <em>Peromyscus leucopus/maniculatus</em> could not be
+confidently determined to be either <em>P. maniculatus</em> or <em>P.
+leucopus</em> in the field.</p>
+</div>
+<div id="obtain-relevant-neon-terrestrial-observation-system-data" class="section level2">
+<h2>Obtain relevant NEON Terrestrial Observation System data</h2>
+<p>In order to compare field and Biorepository measurements of body
+mass, we also need to obtain field data from the main NEON data portal.
+We will use the <code>neonUtilities</code> package to download all small
+mammal capture data from the main NEON data portal. This requires that
+we know the NEON data product ID for small mammals, which is
+DP1.10072.001: <a href="https://data.neonscience.org/data-products/DP1.10072.001" class="uri">https://data.neonscience.org/data-products/DP1.10072.001</a></p>
+<p>The below code chunk allows you to download the data as of 2024-07-30
+from the GitHub repository associated with this tutorial.</p>
+<pre class="r"><code>NEON&lt;-readRDS(gzcon(url(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata&quot;)))</code></pre>
+<p>The below code shows how you could download an up-to-date version of
+this data. We will not download new data today due to the time that
+would be required to do so. Note that we have chosen to include
+Provisional data for this exploratory analysis. To learn more about
+Release vs. Provisional NEON data and ensure that you choose the
+appropriate data for your purposes, visit the following page: <a href="https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial" class="uri">https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial</a>.</p>
+<pre class="r"><code># source .r file with my NEON_TOKEN
+# source(&quot;my_neon_token.R&quot;) # OPTIONAL - load NEON token
+# See: https://www.neonscience.org/neon-api-tokens-tutorial
+
+
+
+biorepo %&gt;% 
+  group_by(collectionCode,scientificName,sex) %&gt;% 
+  count()</code></pre>
+<pre><code>## # A tibble: 272 × 4
+## # Groups:   collectionCode, scientificName, sex [272]
+##    collectionCode scientificName          sex         n
+##    &lt;chr&gt;          &lt;chr&gt;                   &lt;chr&gt;   &lt;int&gt;
+##  1 MAMC-BL        Peromyscus              Female      1
+##  2 MAMC-BL        Peromyscus              Male       10
+##  3 MAMC-BL        Peromyscus              Unknown     1
+##  4 MAMC-BL        Peromyscus attwateri    Female      5
+##  5 MAMC-BL        Peromyscus attwateri    Male       14
+##  6 MAMC-BL        Peromyscus boylii       Female    233
+##  7 MAMC-BL        Peromyscus boylii       Male      264
+##  8 MAMC-BL        Peromyscus boylii       Unknown    12
+##  9 MAMC-BL        Peromyscus californicus Female      1
+## 10 MAMC-BL        Peromyscus eremicus     Female     21
+## # ℹ 262 more rows</code></pre>
 </div>
 
 

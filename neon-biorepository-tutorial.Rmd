@@ -79,7 +79,7 @@ We see that a large number of Darwin Core fields are present in the results that
 ```{r explorefields},message=FALSE}
 # How many samples are included in the results for each collection, species, and sex?
 
-sample_summary<-biorepo %>% 
+biorepo %>% 
   group_by(collectionCode,scientificName,sex) %>% 
   count()
 
@@ -98,22 +98,33 @@ The below code chunk allows you to download the data as of 2024-07-30 from the G
 ```{r loadNeondata, message=FALSE, warning=FALSE}
 NEON<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata")))
 ```
-The below code shows how you could download an up-to-date version of this data. We will not download new data today due to the time that would be required to do so. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following page: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
 
-
+The below code shows how you could download an up-to-date version of this data. The code is commented out because we will not download new data today due to the time that would be required to do so. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following link: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
 
 ```{r downloadDataNew},message=FALSE}
 
-# source .r file with my NEON_TOKEN
+### source .r file with my NEON_TOKEN
 # source("my_neon_token.R") # OPTIONAL - load NEON token
 # See: https://www.neonscience.org/neon-api-tokens-tutorial
 
+### Use the loadByProduct function. Use ?loadByProduct to view the many other options that can be specified
 
-
-sample_summary<-biorepo %>% 
-  group_by(collectionCode,scientificName,sex) %>% 
-  count()
+# NEON <- loadByProduct(dpID="DP1.10072.001",
+#                   package="expanded",
+#                   include.provisional=TRUE,
+#                   token=NEON_TOKEN)
 
 ```
 
+Let's take a look at what is included in a NEON data product download. We will extract and focus on the table that has colated all of the records for individual traps.
 
+```{r whatsInADownload},message=FALSE}
+
+# What's in a download?
+names(NEON)
+
+# Extract the "mam_pertrapnight" table
+trap_data<-NEON$mam_pertrapnight
+names(trap_data)
+
+```
