@@ -61,7 +61,57 @@ library(curl)
 
 ```
 
-##### PUT IN THE NEON DATA HERE
+## Obtain relevant NEON Terrestrial Observation System data
+
+In order to answer our question, we need to know which NEON sites and years correspond to available carbon and nitrogen stable isotope data for canopy foliage and litter samples. We will use the `neonUtilities` package to download all of the data from these two data products from the main NEON data portal. This requires that we know the NEON data product IDs for each relevant data product. 
+
+**NEON Plant Foliar Traits:** "DP1.10026.001" described at  https://data.neonscience.org/data-products/DP1.10026.001
+
+**NEON Litterfall and fine woody debris production and chemistry:** "DP1.10033.001" described at  https://data.neonscience.org/data-products/DP1.10033.001
+
+The below piece of code allows you to download the data as of 2024-08-02 from the GitHub repository associated with this tutorial. We will obtain the data in this way because newly downloading data from the NEON API can be time intensive.
+
+```{r loadNeondata, message=FALSE, warning=FALSE}
+
+# Data required for the study of canopy foliar chemistry
+
+NEON.cfc<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata")))
+
+# Data required for the study of litter chemistry
+
+NEON.ltr<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata")))
+```
+
+The below code shows how you could download an up-to-date version of this data. The code is commented out because we will not download new data today due to the time that would be required to do so. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following link: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
+
+```{r downloadDataNew},message=FALSE}
+
+### source .r file with my NEON_TOKEN
+# source("my_neon_token.R") # OPTIONAL - load NEON token
+# See: https://www.neonscience.org/neon-api-tokens-tutorial
+
+### Use the loadByProduct function. Use ?loadByProduct to view the many other options that can be specified
+
+# NEON <- loadByProduct(dpID="DP1.10072.001",
+#                   package="expanded",
+#                   include.provisional=TRUE,
+#                   token=NEON_TOKEN)
+
+```
+
+Let's take a look at what is included in a NEON data product download. We will extract and focus on the table that has colated all of the records for individual traps.
+
+```{r whatsInADownload},message=FALSE,evaluate=FALSE}
+
+# What's in a download?
+names(NEON)
+
+# Extract the "mam_pertrapnight" table
+trap_data<-NEON$mam_pertrapnight
+names(trap_data)
+
+```
+
 
 
 
@@ -73,7 +123,7 @@ Up to date results for the same search terms can be found at any time using the 
 https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&includeothercatnum=1&eventdate1=2018-01-01&eventdate2=2023-12-31&usethes=1&taxontype=1&availableforloan=1
 
 ```{r load data, message=FALSE, warning=FALSE}
-biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/biorepoOccurrences_FecalAndHairSamples_20240802.csv")
+biorepo<-read.csv(curl("https://github.com/kyule/neon-biorepo-tutorial/raw/main/biorepoOccurrences_FecalAndHairSamples_20240802.csv"))
 ```
 
 Let's look at what information is included in a Darwin Core occurrence record.
