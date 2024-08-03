@@ -75,14 +75,14 @@ The below piece of code allows you to download the data as of 2024-08-02 from th
 
 # Data required for the study of canopy foliar chemistry
 
-NEON.cfc<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata")))
+NEON.cfc<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_cfc.Rdata")))
 
 # Data required for the study of litter chemistry
 
-NEON.ltr<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata")))
+NEON.ltr<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_ltr.Rdata")))
 ```
 
-The below code shows how you could download an up-to-date version of this data. The code is commented out because we will not download new data today due to the time that would be required to do so. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following link: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
+The below code shows how you could download an up-to-date version of this data via the NEON API. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following link: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
 
 ```{r downloadDataNew},message=FALSE}
 
@@ -92,27 +92,40 @@ The below code shows how you could download an up-to-date version of this data. 
 
 ### Use the loadByProduct function. Use ?loadByProduct to view the many other options that can be specified
 
-# NEON <- loadByProduct(dpID="DP1.10072.001",
-#                   package="expanded",
-#                   include.provisional=TRUE,
-#                   token=NEON_TOKEN)
+ #NEON.cfc <- loadByProduct(dpID="DP1.10026.001",
+                    #package="expanded",
+                    #include.provisional=TRUE,
+                    #check.size=FALSE,
+                    #token=Neon_Token)
+ 
+ #NEON.ltr <- loadByProduct(dpID="DP1.10033.001",
+                    #include.provisional=TRUE,
+                    #check.size=FALSE,
+                    #token=Neon_Token)
 
 ```
 
-Let's take a look at what is included in a NEON data product download. We will extract and focus on the table that has colated all of the records for individual traps.
+Let's take a look at what is included in each NEON data product download. We will extract and focus on the table that has colated all of the records for individual traps.
 
 ```{r whatsInADownload},message=FALSE,evaluate=FALSE}
 
 # What's in a download?
-names(NEON)
-
-# Extract the "mam_pertrapnight" table
-trap_data<-NEON$mam_pertrapnight
-names(trap_data)
+names(NEON.cfc)
+names(NEON.ltr)
 
 ```
 
+We can see that the data downloads for each product include several tables. The Quick Start Guides on any NEON data product description page are especially useful for understanding these tables, as are the "variables" and "readme" files included in data downloads. It is recommended that anyone who plans to use NEON data in their work carefully review the associated reading materials. 
 
+For our purpose, we are interested in the files containing measurements of carbon and nitrogen.
+
+```{r whatsInADownload},message=FALSE,evaluate=FALSE}
+
+# What's in a download?
+names(NEON.cfc)
+names(NEON.ltr)
+
+```
 
 
 ## Load and explore NEON Biorepository data
