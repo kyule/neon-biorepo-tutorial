@@ -11,27 +11,33 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Learning Objectives
 
-In this tutorial, we will use NEON small mammals as an example to learn how to: 
+In this tutorial, we will learn how to develop a sample list to optimally answer a research question based on NEON data product and NEON Biorepository sample availability.
 
-1. Explore Darwin Core records downloaded from the NEON Biorepository data portal: https://biorepo.neonscience.org
+1. Outline a broad research question.
 
-2. Summarize NEON Biorepository sample availability based on spatial, temporal, and taxonomic factors.
+2. Download related data from the main NEON data portal using the `neonUtilities` R package.
 
-3. Download related data from the main NEON data portal using the neonUtilities R package.
+3. Compare NEON data availability across multiple data products in order to narrow research scope.
 
-3. Join NEON data to associated sample data.
+4. Identify NEON Biorepository samples that match the research scope of interest  using NEON Biorepository data: https://biorepo.neonscience.org
 
-4. Compare NEON Biorepository specimen data to field collected data.
+## Research question
 
-5. Develop a list of samples based on analysis of sample-associated field data.
+We are interested in testing for relationships between small mammal diet and the carbon and nitrogen stable isotope ratios in co-occurring plant communities. NEON provides extensive information about stable isotopes from samples collected from the canopy and in litter traps. While NEON does not measure small mammal diets as part of its focal protocols, NEON archives both hair and fecal samples that researchers can use to gain these insights.
 
-## Research questions
+**What samples from the NEON Biorepository can be requested in order to conduct this study?** 
 
-1. How do NEON **field** and **Biorepository** measurements of deermice (_Peromyscus_) **body masses** compare?
+To answer this this question, we need to understand where there is spatial and temporal overlap in measurements of canopy foliar chemistry, litter chemistry, and mammal sampling.
 
-2. Can we obtain a **suitable sample list** to study 5 sets of paired DNA and fecal samples from male _Peromyscus leucopus_ individuals at each of 10 NEON field sites?
+We will attempt to develop a list of samples following these criteria:
 
-## Background information
+- Site and year combinations for which carbon nitrogen ratio measurements are available for _both_ canopy foliage and litter
+
+- Common species for which we can achieve a minimum viable sample size for our study
+
+- Both a hair and a fecal sample were collected from the same individual
+
+## Background information on the NEON Biorepository
 
 The NEON Biorepository is located at Arizona State University and serves as the primary repository for NEON samples and specimens collected across all 81 NEON field sites. 
 
@@ -55,28 +61,32 @@ library(curl)
 
 ```
 
+##### PUT IN THE NEON DATA HERE
+
+
+
 ## Load and explore NEON Biorepository data
 
-Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The full results are located in the Github repository https://github.com/kyule/neon-biorepo-tutorial and represent a search for all _Peromyscus_ samples archived at the NEON Biorepository as of 2024-07-30.
+Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the Github repository https://github.com/kyule/neon-biorepo-tutorial and represent a search for all small mammal hair and fecal samples collected in 2018-2023 and archived at the NEON Biorepository as of 2024-08-02.
 
 Up to date results for the same search terms can be found at any time using the link: 
-https://biorepo.neonscience.org/portal/collections/list.php?db=24%2C71%2C25%2C26%2C27%2C91%2C90%2C17%2C19%2C28&includeothercatnum=1&taxa=Peromyscus&usethes=1&taxontype=1
+https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&includeothercatnum=1&eventdate1=2018-01-01&eventdate2=2023-12-31&usethes=1&taxontype=1&availableforloan=1
 
 ```{r load data, message=FALSE, warning=FALSE}
-biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/Peromyscus_20240730_DwCRecords/occurrences.csv")
+biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/biorepoOccurrences_FecalAndHairSamples_20240802")
 ```
 
 Let's look at what information is included in a Darwin Core occurrence record.
 
-```{r investigate},message=FALSE}
+```{r investigate},message=FALSE,evaluate=FALSE}
 # What variables exist for the records?
 
 names(biorepo)
 
 ```
-We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. Let's explore the data in some fields of interest relative to our questions in order to get a rough understanding of sample availability.
+We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. For fun, let's explore the data. Try grouping or summarizing by fields that interest you.
 
-```{r explorefields},message=FALSE}
+```{r explorefields},message=FALSE,evaluate=FALSE}
 # How many samples are included in the results for each collection, species, and sex?
 
 biorepo %>% 
@@ -85,7 +95,7 @@ biorepo %>%
 
 ```
 
-Different collectionCodes correspond to different sample types (e.g. "MAMC-BL" corresponds to the Mammal Blood Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=24). 
+Different collectionCodes correspond to different sample types. "MAMC-FE" corresponds to the Mammal Fecal Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26). "MAMC-HA" corresponds to the Mammal Hair Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27). 
 
 We see several different taxa represented within the results. Most samples are associated with a species-level determination. A few are identified only to genus and others are given a "/" taxon. The latter represent uncertain identification between two species that are difficult to distinguish at a given field site. For example, individuals identified as _Peromyscus leucopus/maniculatus_ could not be confidently determined to be either _P. maniculatus_ or _P. leucopus_ in the field.
 
