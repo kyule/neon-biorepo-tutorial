@@ -117,13 +117,17 @@ names(NEON.ltr)
 
 We can see that the data downloads for each product include several tables. The Quick Start Guides on any NEON data product description page are especially useful for understanding these tables, as are the "variables" and "readme" files included in data downloads. It is recommended that anyone who plans to use NEON data in their work carefully review the associated reading materials. 
 
-For our purpose, we are interested in the files containing measurements of carbon and nitrogen.
+For our purpose, we are interested in the files containing measurements of carbon and nitrogen, so we will extract those data files. Since the sampling resolution is not equivalent across data products we will summarize each of them based on the availability of carbon nitrogen ratio data in order to find the overlapping sampling points.
 
-```{r whatsInADownload},message=FALSE,evaluate=FALSE}
+```{r summariseData},message=FALSE,evaluate=FALSE}
 
-# What's in a download?
-names(NEON.cfc)
-names(NEON.ltr)
+# Extract and rename tables of interest
+
+cfc_CN<-NEON.cfc$cfc_carbonNitrogen
+ltr_CN<-NEON.ltr$ltr_litterCarbonNitrogen
+
+
+
 
 ```
 
@@ -147,6 +151,7 @@ Let's look at what information is included in a Darwin Core occurrence record.
 names(biorepo)
 
 ```
+
 We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. For fun, let's explore the data. Try grouping or summarizing by fields that interest you.
 
 ```{r explorefields},message=FALSE,evaluate=FALSE}
