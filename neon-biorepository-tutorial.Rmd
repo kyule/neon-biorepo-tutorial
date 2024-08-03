@@ -73,7 +73,7 @@ Up to date results for the same search terms can be found at any time using the 
 https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&includeothercatnum=1&eventdate1=2018-01-01&eventdate2=2023-12-31&usethes=1&taxontype=1&availableforloan=1
 
 ```{r load data, message=FALSE, warning=FALSE}
-biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/biorepoOccurrences_FecalAndHairSamples_20240802")
+biorepo<-read.csv("https://github.com/kyule/neon-biorepo-tutorial/raw/main/biorepoOccurrences_FecalAndHairSamples_20240802.csv")
 ```
 
 Let's look at what information is included in a Darwin Core occurrence record.
@@ -128,7 +128,7 @@ The below code shows how you could download an up-to-date version of this data. 
 
 Let's take a look at what is included in a NEON data product download. We will extract and focus on the table that has colated all of the records for individual traps.
 
-```{r whatsInADownload},message=FALSE}
+```{r whatsInADownload},message=FALSE,evaluate=FALSE}
 
 # What's in a download?
 names(NEON)
