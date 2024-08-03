@@ -1,7 +1,7 @@
 ---
 title: "NEON Biorepository Data Tutorial"
 author: "Kelsey Yule"
-date: "2024-07-30"
+date: "2024-08-02"
 output: html_document
 ---
 
@@ -143,3 +143,15 @@ names(trap_data)
 
 ```
 
+######## lasjdflaksjfjsldjf;aksdj
+
+
+Subset the NEON Biorepository samples to DNA and fecal samples only based on collection code and potentially from _P. leucopus_.
+
+```{r filter to },message=FALSE}
+
+# Extract the "mam_pertrapnight" table
+p_leucopus_dna_fecal<-biorepo %>%
+                        filter(collectionCode %in% c("MAMC-DNA","MAMC-FE")) #%>%
+                        #filter(specificEpithet,contains("leucopus"))
+```
