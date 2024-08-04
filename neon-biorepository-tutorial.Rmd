@@ -55,6 +55,7 @@ First, we want to clear out our workspace and load the required packages. If you
 # rm(list = ls()) # OPTIONAL - clear out your environment
 
 # load packages
+
 library(tidyverse)
 library(neonUtilities)
 library(curl)
@@ -75,11 +76,11 @@ The below piece of code allows you to download the data as of 2024-08-02 from th
 
 # Data required for the study of canopy foliar chemistry
 
-NEON.cfc<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_cfc.Rdata")))
+NEON.cfc <- readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_cfc.Rdata")))
 
 # Data required for the study of litter chemistry
 
-NEON.ltr<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_ltr.Rdata")))
+NEON.ltr <- readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_ltr.Rdata")))
 ```
 
 The below code shows how you could download an up-to-date version of this data via the NEON API. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following link: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
@@ -110,6 +111,7 @@ Let's take a look at what is included in each NEON data product download. We wil
 ```{r whatsInADownload},message=FALSE,evaluate=FALSE}
 
 # What's in a download?
+
 names(NEON.cfc)
 names(NEON.ltr)
 
@@ -130,14 +132,14 @@ ltr <- NEON.ltr$ltr_litterCarbonNitrogen
 
 # Summarize data by year and site
 
-summary.cfc<- cfc %>% 
+summary.cfc <- cfc %>% 
               mutate(year=year(collectDate)) %>% 
               group_by(siteID,year) %>% 
               summarise(n=length(uid),meanCN=mean(CNratio,na.rm=TRUE))
 
 summary.cfc
 
-summary.ltr<- ltr %>% 
+summary.ltr <- ltr %>% 
               mutate(year=year(collectDate)) %>% 
               group_by(siteID,year) %>% 
               summarise(n=length(uid),meanCN=mean(CNratio,na.rm=TRUE)) 
@@ -146,17 +148,16 @@ summary.ltr
 ```
 We can see that there are more year by site combinations for which CN ratio data exist from canopy foliage than from litter samples. Since we are interested in studying both components of the ecosystem, let's subset our data to only those instances for which both sets of data are available. To do this we need to join our datasets by site and year. We will then select one year of data from each of the site x year combinations and add a column for a new "site by year" variable.
                   
-                  
 ```{r joinData},message=FALSE,evaluate=TRUE}
 
 # Join the two summary data frames
-CN<-full_join(summary.cfc,summary.ltr,
+CN <- full_join(summary.cfc,summary.ltr,
                   join_by("siteID"=="siteID","year"=="year"),
                   suffix = c(".cfc",".ltr")) %>%
                   filter(meanCN.cfc>0,meanCN.ltr>0)
 
 #choose the most recent year of data when sites have multiple years
-CN <-CN %>%
+CN <- CN %>%
       filter(!duplicated(siteID,fromLast = TRUE)) %>%
       mutate(siteYear=paste(siteID,year,sep="."))
 
@@ -195,7 +196,7 @@ biorepo %>%
 
 ```
 
-We see several different taxa represented within the results. Most samples are associated with a species-level determination. A few are identified only to genus and others are given a "/" taxon. The latter represent uncertain identification between two species that are difficult to distinguish at a given field site. For example, individuals identified as _Peromyscus leucopus/maniculatus_ could not be confidently determined to be either _P. maniculatus_ or _P. leucopus_ in the field. Let's narrow are data to only samples for which a species level identification was made.
+_An aside on taxonomic identifications:_ We see several different taxa represented within the results. Most samples are associated with a species-level determination. However, some small mammal species are very difficult to identify while live in the field at some sites. Therefore, some individuals are identified only to genus and others are given a "/" taxon. The latter represent uncertain identification between two species that are difficult to distinguish at a given field site. For example, individuals identified as _Peromyscus leucopus/maniculatus_ could not be confidently determined to be either _P. maniculatus_ or _P. leucopus_ in the field. We will narrow our data to only samples for which a species level identification was made below. Many specimens are also given identification qualifiers, such as "cf. species," which indicates some uncertainty in the field determination. We will ignore those notes for today, but we encourage any researcher interested in NEON small mammal samples to contact the NEON Bioreposity staff (biorepo@asu.edu) to better understand species-level identification confidence. When possible, we are often interested in collaborating with researchers on efforts to confirm identifications.
 
 ```{r taxonomicSiteYear},message=FALSE,evaluate=TRUE}
 
@@ -213,15 +214,20 @@ We want to include only samples collected from the same site x year combinations
 
 # Create a site by year column and filter the sample results
 
-biorepo<-
-  biorepo %>% 
-  mutate(siteID=substr(locationID,1,4)) %>% 
-  mutate(siteYear=paste(siteID,year,sep=".")) %>%
-  filter(siteYear %in% CN$siteYear)
+biorepo <- biorepo %>% 
+              mutate(siteID=substr(locationID,1,4)) %>% 
+              mutate(siteYear=paste(siteID,year,sep=".")) %>%
+              filter(siteYear %in% CN$siteYear)
 
 ```
 
-Different collectionCodes correspond to different sample types. "MAMC-FE" corresponds to the Mammal Fecal Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26). "MAMC-HA" corresponds to the Mammal Hair Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27). We will separate the hair and fecal samples into seperate data frames for ease of use 
+Different collectionCodes correspond to different sample types. 
+
+"MAMC-HA" corresponds to the **Mammal Hair Sample Collection** described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27). 
+
+"MAMC-FE" corresponds to the **Mammal Fecal Sample Collection** described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26). 
+
+We will separate the hair and fecal samples into seperate data frames for ease of use 
 
 ```{r sepCollections},message=FALSE,evaluate=TRUE}
 
@@ -255,6 +261,7 @@ hairBySpecies <- hair %>%
 hair <- hair %>% 
           mutate(siteSp=paste(siteID,scientificName,sep="_")) %>%
           filter(siteSp %in% hairBySpecies$siteSp)
+
 fecal <- fecal %>% 
           mutate(siteSp=paste(siteID,scientificName,sep="_")) %>%
           filter(siteSp %in% hairBySpecies$siteSp)
@@ -269,16 +276,20 @@ These urls are pipe delimited and contain the "catalogNumber" for related sample
 
 # Find pairs of hair and fecal samples associated with the same individuals
 
-matches<-data.frame(hair=c(),fecal=c())
+matches <- data.frame(hair=c(),fecal=c())
 
 for (i in 1:nrow(fecal)){
-  matchHair<-hair$catalogNumber[grepl(fecal$catalogNumber[i],hair$associatedOccurrences)][1]
-  if(is.na(matchHair)==FALSE){
-    matches<-rbind(matches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
+  matchHair <- hair$catalogNumber[grepl(fecal$catalogNumber[i],hair$associatedOccurrences)][1]
+  
+  if(is.na(matchHair) == FALSE){
+    matches <- rbind(matches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
   }
+  
 }
 
 # Remove duplicate samples from this list
+
+matches <- matches %>% filter(!duplicated(hair))
 
 ```
 
