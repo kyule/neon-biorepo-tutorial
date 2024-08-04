@@ -261,8 +261,26 @@ fecal <- fecal %>%
 
 ```
 
+We now need to determine which fecal and hair samples are associated with the same individual. We can determine this based on the "associatedOccurrences" field in the NEON Biorepository occurrences field. This field provides url links to samples that can be related in a variety of ways. See the Darwin Core reference guide to understand this and other controlled terminology: https://dwc.tdwg.org/terms/
 
-Now we 
+These urls are pipe delimited and contain the "catalogNumber" for related samples. The only relationship between  mammal hair and fecal samples in the NEON Biorepository data portal is "derivedFromSameIndividual." We will extract relationships from the "associatedOccurrences" field to create a new data frame of catalogNumbers of paired samples.
+
+```{r matchSamples},message=FALSE,evaluate=TRUE}
+
+# Find pairs of hair and fecal samples associated with the same individuals
+
+matches<-data.frame(hair=c(),fecal=c())
+
+for (i in 1:nrow(fecal)){
+  matchHair<-hair$catalogNumber[grepl(fecal$catalogNumber[i],hair$associatedOccurrences)][1]
+  if(is.na(matchHair)==FALSE){
+    matches<-rbind(matches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
+  }
+}
+
+```
+
+#######
 
 ```{r matchSamples},message=FALSE,evaluate=TRUE}
 
