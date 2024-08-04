@@ -293,7 +293,7 @@ matches <- matches %>% filter(!duplicated(hair))
 
 ```
 
-#######
+We find nearly 1500 unique individuals with paired hair and fecal samples meeting our criteria so far. 
 
 ```{r nextSection},message=FALSE,evaluate=TRUE}
 
