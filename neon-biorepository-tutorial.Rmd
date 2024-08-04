@@ -278,11 +278,13 @@ for (i in 1:nrow(fecal)){
   }
 }
 
+# Remove duplicate samples from this list
+
 ```
 
 #######
 
-```{r matchSamples},message=FALSE,evaluate=TRUE}
+```{r nextSection},message=FALSE,evaluate=TRUE}
 
 # Find pairs of hair and fecal samples associated with the same individuals
 
