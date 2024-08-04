@@ -293,20 +293,17 @@ matches <- matches %>% filter(!duplicated(hair))
 
 ```
 
-We find nearly 1500 unique individuals with paired hair and fecal samples meeting our criteria so far. 
+We find nearly 1500 unique individuals with paired hair and fecal samples meeting our criteria so far. Let's summarize by the number of samples across site by species combinations and filter to those combinations for which 10 or more individuals are available.
 
-```{r nextSection},message=FALSE,evaluate=TRUE}
+```{r create the hair data frame},message=FALSE,evaluate=TRUE}
 
-# Find pairs of hair and fecal samples associated with the same individuals
+hairMatches <- matches %>% 
+                left_join(hair,join_by("hair"=="catalogNumber")) 
 
-#matches<-data.frame(hair=c(),fecal=c())
-
-#for (i in 1:nrow(fecal)){
- # matchHair<-hair$catalogNumber[grepl(fecal$catalogNumber[i],hair$associatedOccurrences)][1]
-  #if(is.na(matchHair)==FALSE){
-   # matches<-rbind(matches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
-  #}
-#}
+hairMatchSummary <- hairMatches %>%
+                      group_by(siteSp) %>% 
+                      count() %>% 
+                      filter(n>=10)
 
 ```
 
