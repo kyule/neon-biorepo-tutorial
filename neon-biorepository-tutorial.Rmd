@@ -117,22 +117,54 @@ names(NEON.ltr)
 
 We can see that the data downloads for each product include several tables. The Quick Start Guides on any NEON data product description page are especially useful for understanding these tables, as are the "variables" and "readme" files included in data downloads. It is recommended that anyone who plans to use NEON data in their work carefully review the associated reading materials. 
 
+# Narrow the spatial and temporal scope based on available data
+
 For our purpose, we are interested in the files containing measurements of carbon and nitrogen, so we will extract those data files. Since the sampling resolution is not equivalent across data products we will summarize each of them based on the availability of carbon nitrogen ratio data in order to find the overlapping sampling points.
 
-```{r summariseData},message=FALSE,evaluate=FALSE}
+```{r summariseData},message=FALSE,evaluate=TRUE}
 
 # Extract and rename tables of interest
 
-cfc_CN<-NEON.cfc$cfc_carbonNitrogen
-ltr_CN<-NEON.ltr$ltr_litterCarbonNitrogen
+cfc <- NEON.cfc$cfc_carbonNitrogen
+ltr <- NEON.ltr$ltr_litterCarbonNitrogen
 
+# Summarize data by year and site
 
+summary.cfc<- cfc %>% 
+              mutate(year=year(collectDate)) %>% 
+              group_by(siteID,year) %>% 
+              summarise(n=length(uid),meanCN=mean(CNratio,na.rm=TRUE))
 
+summary.cfc
+
+summary.ltr<- ltr %>% 
+              mutate(year=year(collectDate)) %>% 
+              group_by(siteID,year) %>% 
+              summarise(n=length(uid),meanCN=mean(CNratio,na.rm=TRUE)) 
+summary.ltr
+
+```
+We can see that there are more year by site combinations for which CN ratio data exist from canopy foliage than from litter samples. Since we are interested in studying both components of the ecosystem, let's subset our data to only those instances for which both sets of data are available. To do this we need to join our datasets by site and year. We will then select one year of data from each of the site x year combinations and add a column for a new "site by year" variable.
+                  
+                  
+```{r joinData},message=FALSE,evaluate=TRUE}
+
+# Join the two summary data frames
+CN<-full_join(summary.cfc,summary.ltr,
+                  join_by("siteID"=="siteID","year"=="year"),
+                  suffix = c(".cfc",".ltr")) %>%
+                  filter(meanCN.cfc>0,meanCN.ltr>0)
+
+#choose the most recent year of data when sites have multiple years
+CN <-CN %>%
+      filter(!duplicated(siteID,fromLast = TRUE)) %>%
+      mutate(siteYear=paste(siteID,year,sep="."))
 
 ```
 
+We have now identified 31 site by year combinations for which we would like to obtain paired mammal hair and fecal samples for further study! Now we will look for available samples.
 
-## Load and explore NEON Biorepository data
+# Load and explore NEON Biorepository data
 
 Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the Github repository https://github.com/kyule/neon-biorepo-tutorial and represent a search for all small mammal hair and fecal samples collected in 2018-2023 and archived at the NEON Biorepository as of 2024-08-02.
 
@@ -152,7 +184,7 @@ names(biorepo)
 
 ```
 
-We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. For fun, let's explore the data. Try grouping or summarizing by fields that interest you.
+We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. For fun, let's explore the data. Try grouping or summarizing by any fields that interest you.
 
 ```{r explorefields},message=FALSE,evaluate=FALSE}
 # How many samples are included in the results for each collection, species, and sex?
@@ -163,73 +195,48 @@ biorepo %>%
 
 ```
 
-Different collectionCodes correspond to different sample types. "MAMC-FE" corresponds to the Mammal Fecal Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26). "MAMC-HA" corresponds to the Mammal Hair Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27). 
+We see several different taxa represented within the results. Most samples are associated with a species-level determination. A few are identified only to genus and others are given a "/" taxon. The latter represent uncertain identification between two species that are difficult to distinguish at a given field site. For example, individuals identified as _Peromyscus leucopus/maniculatus_ could not be confidently determined to be either _P. maniculatus_ or _P. leucopus_ in the field. Let's narrow are data to only samples for which a species level identification was made.
 
-We see several different taxa represented within the results. Most samples are associated with a species-level determination. A few are identified only to genus and others are given a "/" taxon. The latter represent uncertain identification between two species that are difficult to distinguish at a given field site. For example, individuals identified as _Peromyscus leucopus/maniculatus_ could not be confidently determined to be either _P. maniculatus_ or _P. leucopus_ in the field.
+```{r taxonomicSiteYear},message=FALSE,evaluate=TRUE}
 
-## Obtain relevant NEON Terrestrial Observation System data
+# Remove instances of slash identifications and determinations above the species level
 
-In order to compare field and Biorepository measurements of body mass, we also need to obtain field data from the main NEON data portal. We will use the `neonUtilities` package to download all small mammal capture data from the main NEON data portal. This requires that we know the NEON data product ID for small mammals, which is DP1.10072.001: https://data.neonscience.org/data-products/DP1.10072.001
-
-The below code chunk allows you to download the data as of 2024-07-30 from the GitHub repository associated with this tutorial.
-
-```{r loadNeondata, message=FALSE, warning=FALSE}
-NEON<-readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/mammalCaptures_20240730.Rdata")))
+biorepo <- biorepo %>% 
+              filter(!grepl("/",scientificName),!is.na(specificEpithet))
 ```
 
-The below code shows how you could download an up-to-date version of this data. The code is commented out because we will not download new data today due to the time that would be required to do so. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following link: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
+# Narrow the results to a set of samples that fits our research question
 
-```{r downloadDataNew},message=FALSE}
+We want to include only samples collected from the same site x year combinations we are interested in based on CN ratio data.
 
-### source .r file with my NEON_TOKEN
-# source("my_neon_token.R") # OPTIONAL - load NEON token
-# See: https://www.neonscience.org/neon-api-tokens-tutorial
+```{r sampleScope},message=FALSE,evaluate=TRUE}
 
-### Use the loadByProduct function. Use ?loadByProduct to view the many other options that can be specified
+# Create a site by year column and filter the sample results
 
-# NEON <- loadByProduct(dpID="DP1.10072.001",
-#                   package="expanded",
-#                   include.provisional=TRUE,
-#                   token=NEON_TOKEN)
+biorepo<-
+  biorepo %>% 
+  mutate(siteID=substr(locationID,1,4)) %>% 
+  mutate(siteYear=paste(siteID,year,sep=".")) %>%
+  filter(siteYear %in% CN$siteYear)
 
 ```
 
-Let's take a look at what is included in a NEON data product download. We will extract and focus on the table that has colated all of the records for individual traps.
+Different collectionCodes correspond to different sample types. "MAMC-FE" corresponds to the Mammal Fecal Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26). "MAMC-HA" corresponds to the Mammal Hair Sample Collection described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27). We will separate the hair and fecal samples into seperate data frames for ease of use 
 
-```{r whatsInADownload},message=FALSE,evaluate=FALSE}
+```{r sepCollections},message=FALSE,evaluate=TRUE}
 
-# What's in a download?
-names(NEON)
+# Extract the hair and fecal samples
 
-# Extract the "mam_pertrapnight" table
-trap_data<-NEON$mam_pertrapnight
-names(trap_data)
+hair <- biorepo %>%
+          filter(collectionCode=="MAMC-HA")
 
-```
-
-We are interested in the mammal trap-level data in order to match trapping events with records of Biorepository samples.
-
-
-```{r getTrapNightData},message=FALSE}
-
-# What's in a download?
-names(NEON)
-
-# Extract the "mam_pertrapnight" table
-trap_data<-NEON$mam_pertrapnight
-names(trap_data)
+fecal <- biorepo %>%
+          filter(collectionCode=="MAMC-FE")
 
 ```
 
-######## lasjdflaksjfjsldjf;aksdj
+We see that there are a large number of samples that fit the site and year criteria of our study. We know that we want to focus on common species because we cannot fully deplete NEON Biorepository resources for future researchers (https://biorepo.neonscience.org/portal/misc/samplepolicy.php), we want to make sure we have sufficient within species replication for our analyses (and likely our own resources constraints!)
 
 
-Subset the NEON Biorepository samples to DNA and fecal samples only based on collection code and potentially from _P. leucopus_.
 
-```{r filter to },message=FALSE}
 
-# Extract the "mam_pertrapnight" table
-p_leucopus_dna_fecal<-biorepo %>%
-                        filter(collectionCode %in% c("MAMC-DNA","MAMC-FE")) #%>%
-                        #filter(specificEpithet,contains("leucopus"))
-```
