@@ -270,7 +270,7 @@ fecal <- fecal %>%
 
 We now need to determine which fecal and hair samples are associated with the same individual. We can determine this based on the "associatedOccurrences" field in the NEON Biorepository occurrences field. This field provides url links to samples that can be related in a variety of ways. See the Darwin Core reference guide to understand this and other controlled terminology: https://dwc.tdwg.org/terms/
 
-These urls are pipe delimited and contain the "catalogNumber" for related samples. The only relationship between  mammal hair and fecal samples in the NEON Biorepository data portal is "derivedFromSameIndividual." We will extract relationships from the "associatedOccurrences" field to create a new data frame of catalogNumbers of paired samples. The code to do this provided below is a for loop that cycles through several thousand samples, so it may take a few minutes to run.
+These urls are pipe delimited and contain the "catalogNumber" for related samples. The only relationship between  mammal hair and fecal samples in the NEON Biorepository data portal is "derivedFromSameIndividual." We will extract relationships from the "associatedOccurrences" field to create a new data frame of catalogNumbers of paired samples. The code to do this provided below is a for loop that cycles through several thousand samples, so it may take a while to run.
 
 ```{r matchSamples},message=FALSE,evaluate=TRUE}
 
@@ -297,23 +297,31 @@ We find nearly 1500 unique individuals with paired hair and fecal samples meetin
 
 ```{r create the hair data frame},message=FALSE,evaluate=TRUE}
 
-# Create a data frame of occurrence records for hair samples in our dataset so far
+# Randomly choose 10 individuals from each site by species combination
 
-hairMatches <- matches %>% 
-                left_join(hair,join_by("hair"=="catalogNumber")) 
+set.seed(85705)
 
-# Summarise to site by species combination and keep only those combinations for which we can obtain more than 10 individuals with paired samples
-
-hairMatchSummary <- hairMatches %>%
-                      group_by(siteSp) %>% 
-                      count() %>% 
-                      filter(n>=10)
-
-# Filter the full data frame to contain only those samples that match ethe above criteria
-
-hairMatches <- hairMatches %>%
-              filter(siteSp %in% hairMatchSummary$siteSp)
+hairMatchSet <-  hairMatches[sample(nrow(hairMatches)),] %>%
+                	arrange(desc(siteSp)) %>% group_by(siteSp) %>% 
+                	slice(1:10)
 
 ```
 
-Now that we have filtered to the site by species combinations for which we _can_ obtain 10 individuals, we need to subset these samples to include _only_ include 10 samples for each of these combinations. 
+We now want to create a data frame representing the full list of samples we would like to request for our project.
+
+```{r request},message=FALSE,evaluate=TRUE}
+
+# Filter the full data sets to those involved in the request of interest
+
+request <- biorepo %>%
+                filter(catalogNumber %in% c(hairMatchSet$hair,hairMatchSet$fecal))
+
+
+
+```
+
+
+We now have a list of 700 samples we could request from the NEON Biorepository via the sample request form: https://biorepo.neonscience.org/portal/misc/samplerequest.php
+
+We might be interested in creating a visualization for a grant proposal in which we planned to use these samples.
+
