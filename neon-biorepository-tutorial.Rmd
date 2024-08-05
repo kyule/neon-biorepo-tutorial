@@ -297,13 +297,23 @@ We find nearly 1500 unique individuals with paired hair and fecal samples meetin
 
 ```{r create the hair data frame},message=FALSE,evaluate=TRUE}
 
+# Create a data frame of occurrence records for hair samples in our dataset so far
+
 hairMatches <- matches %>% 
                 left_join(hair,join_by("hair"=="catalogNumber")) 
+
+# Summarise to site by species combination and keep only those combinations for which we can obtain more than 10 individuals with paired samples
 
 hairMatchSummary <- hairMatches %>%
                       group_by(siteSp) %>% 
                       count() %>% 
                       filter(n>=10)
 
+# Filter the full data frame to contain only those samples that match ethe above criteria
+
+hairMatches <- hairMatches %>%
+              filter(siteSp %in% hairMatchSummary$siteSp)
+
 ```
 
+Now that we have filtered to the site by species combinations for which we _can_ obtain 10 individuals, we need to subset these samples to include _only_ include 10 samples for each of these combinations. 

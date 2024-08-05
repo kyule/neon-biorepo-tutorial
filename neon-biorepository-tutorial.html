@@ -427,6 +427,7 @@ do so with the <code>install.packages()</code> function.</p>
 # rm(list = ls()) # OPTIONAL - clear out your environment
 
 # load packages
+
 library(tidyverse)
 library(neonUtilities)
 library(curl)</code></pre>
@@ -450,11 +451,11 @@ will obtain the data in this way because newly downloading data from the
 NEON API can be time intensive.</p>
 <pre class="r"><code># Data required for the study of canopy foliar chemistry
 
-NEON.cfc&lt;-readRDS(gzcon(url(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_cfc.Rdata&quot;)))
+NEON.cfc &lt;- readRDS(gzcon(url(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_cfc.Rdata&quot;)))
 
 # Data required for the study of litter chemistry
 
-NEON.ltr&lt;-readRDS(gzcon(url(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_ltr.Rdata&quot;)))</code></pre>
+NEON.ltr &lt;- readRDS(gzcon(url(&quot;https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_ltr.Rdata&quot;)))</code></pre>
 <p>The below code shows how you could download an up-to-date version of
 this data via the NEON API. Note that we have chosen to include
 Provisional data for this exploratory analysis. To learn more about
@@ -480,6 +481,7 @@ appropriate data for your purposes, visit the following link: <a href="https://w
 download. We will extract and focus on the table that has colated all of
 the records for individual traps.</p>
 <pre class="r"><code># What&#39;s in a download?
+
 names(NEON.cfc)</code></pre>
 <pre><code>##  [1] &quot;bgc_CNiso_externalSummary&quot;   &quot;categoricalCodes_10026&quot;     
 ##  [3] &quot;cfc_carbonNitrogen&quot;          &quot;cfc_chemistrySubsampling&quot;   
@@ -522,7 +524,7 @@ ltr &lt;- NEON.ltr$ltr_litterCarbonNitrogen
 
 # Summarize data by year and site
 
-summary.cfc&lt;- cfc %&gt;% 
+summary.cfc &lt;- cfc %&gt;% 
               mutate(year=year(collectDate)) %&gt;% 
               group_by(siteID,year) %&gt;% 
               summarise(n=length(uid),meanCN=mean(CNratio,na.rm=TRUE))
@@ -543,7 +545,7 @@ summary.cfc</code></pre>
 ##  9 DCFS    2023    22   24.2
 ## 10 DEJU    2018    45   54.4
 ## # ℹ 59 more rows</code></pre>
-<pre class="r"><code>summary.ltr&lt;- ltr %&gt;% 
+<pre class="r"><code>summary.ltr &lt;- ltr %&gt;% 
               mutate(year=year(collectDate)) %&gt;% 
               group_by(siteID,year) %&gt;% 
               summarise(n=length(uid),meanCN=mean(CNratio,na.rm=TRUE)) 
@@ -571,13 +573,13 @@ available. To do this we need to join our datasets by site and year. We
 will then select one year of data from each of the site x year
 combinations and add a column for a new “site by year” variable.</p>
 <pre class="r"><code># Join the two summary data frames
-CN&lt;-full_join(summary.cfc,summary.ltr,
+CN &lt;- full_join(summary.cfc,summary.ltr,
                   join_by(&quot;siteID&quot;==&quot;siteID&quot;,&quot;year&quot;==&quot;year&quot;),
                   suffix = c(&quot;.cfc&quot;,&quot;.ltr&quot;)) %&gt;%
                   filter(meanCN.cfc&gt;0,meanCN.ltr&gt;0)
 
 #choose the most recent year of data when sites have multiple years
-CN &lt;-CN %&gt;%
+CN &lt;- CN %&gt;%
       filter(!duplicated(siteID,fromLast = TRUE)) %&gt;%
       mutate(siteYear=paste(siteID,year,sep=&quot;.&quot;))</code></pre>
 <p>We have now identified 31 site by year combinations for which we
@@ -673,15 +675,25 @@ biorepo %&gt;%
 ##  9 MAMC-FE        &quot;Callospermophilus lateralis&quot; Female      4
 ## 10 MAMC-FE        &quot;Callospermophilus lateralis&quot; Male       10
 ## # ℹ 410 more rows</code></pre>
-<p>We see several different taxa represented within the results. Most
-samples are associated with a species-level determination. A few are
-identified only to genus and others are given a “/” taxon. The latter
-represent uncertain identification between two species that are
-difficult to distinguish at a given field site. For example, individuals
-identified as <em>Peromyscus leucopus/maniculatus</em> could not be
-confidently determined to be either <em>P. maniculatus</em> or <em>P.
-leucopus</em> in the field. Let’s narrow are data to only samples for
-which a species level identification was made.</p>
+<p><em>An aside on taxonomic identifications:</em> We see several
+different taxa represented within the results. Most samples are
+associated with a species-level determination. However, some small
+mammal species are very difficult to identify while live in the field at
+some sites. Therefore, some individuals are identified only to genus and
+others are given a “/” taxon. The latter represent uncertain
+identification between two species that are difficult to distinguish at
+a given field site. For example, individuals identified as
+<em>Peromyscus leucopus/maniculatus</em> could not be confidently
+determined to be either <em>P. maniculatus</em> or <em>P. leucopus</em>
+in the field. We will narrow our data to only samples for which a
+species level identification was made below. Many specimens are also
+given identification qualifiers, such as “cf. species,” which indicates
+some uncertainty in the field determination. We will ignore those notes
+for today, but we encourage any researcher interested in NEON small
+mammal samples to contact the NEON Bioreposity staff (<a href="mailto:biorepo@asu.edu" class="email">biorepo@asu.edu</a>) to
+better understand species-level identification confidence. When
+possible, we are often interested in collaborating with researchers on
+efforts to confirm identifications.</p>
 <pre class="r"><code># Remove instances of slash identifications and determinations above the species level
 
 biorepo &lt;- biorepo %&gt;% 
@@ -694,17 +706,16 @@ question</h1>
 combinations we are interested in based on CN ratio data.</p>
 <pre class="r"><code># Create a site by year column and filter the sample results
 
-biorepo&lt;-
-  biorepo %&gt;% 
-  mutate(siteID=substr(locationID,1,4)) %&gt;% 
-  mutate(siteYear=paste(siteID,year,sep=&quot;.&quot;)) %&gt;%
-  filter(siteYear %in% CN$siteYear)</code></pre>
-<p>Different collectionCodes correspond to different sample types.
-“MAMC-FE” corresponds to the Mammal Fecal Sample Collection described
-here: <a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26" class="uri">https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26</a>).
-“MAMC-HA” corresponds to the Mammal Hair Sample Collection described
-here: <a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27" class="uri">https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27</a>).
-We will separate the hair and fecal samples into seperate data frames
+biorepo &lt;- biorepo %&gt;% 
+              mutate(siteID=substr(locationID,1,4)) %&gt;% 
+              mutate(siteYear=paste(siteID,year,sep=&quot;.&quot;)) %&gt;%
+              filter(siteYear %in% CN$siteYear)</code></pre>
+<p>Different collectionCodes correspond to different sample types.</p>
+<p>“MAMC-HA” corresponds to the <strong>Mammal Hair Sample
+Collection</strong> described here: <a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27" class="uri">https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27</a>).</p>
+<p>“MAMC-FE” corresponds to the <strong>Mammal Fecal Sample
+Collection</strong> described here: <a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26" class="uri">https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26</a>).</p>
+<p>We will separate the hair and fecal samples into seperate data frames
 for ease of use</p>
 <pre class="r"><code># Extract the hair and fecal samples
 
@@ -736,6 +747,7 @@ hairBySpecies &lt;- hair %&gt;%
 hair &lt;- hair %&gt;% 
           mutate(siteSp=paste(siteID,scientificName,sep=&quot;_&quot;)) %&gt;%
           filter(siteSp %in% hairBySpecies$siteSp)
+
 fecal &lt;- fecal %&gt;% 
           mutate(siteSp=paste(siteID,scientificName,sep=&quot;_&quot;)) %&gt;%
           filter(siteSp %in% hairBySpecies$siteSp)</code></pre>
@@ -755,29 +767,31 @@ a for loop that cycles through several thousand samples, so it may take
 a few minutes to run.</p>
 <pre class="r"><code># Find pairs of hair and fecal samples associated with the same individuals
 
-matches&lt;-data.frame(hair=c(),fecal=c())
+matches &lt;- data.frame(hair=c(),fecal=c())
 
 for (i in 1:nrow(fecal)){
-  matchHair&lt;-hair$catalogNumber[grepl(fecal$catalogNumber[i],hair$associatedOccurrences)][1]
-  if(is.na(matchHair)==FALSE){
-    matches&lt;-rbind(matches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
+  matchHair &lt;- hair$catalogNumber[grepl(fecal$catalogNumber[i],hair$associatedOccurrences)][1]
+  
+  if(is.na(matchHair) == FALSE){
+    matches &lt;- rbind(matches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
   }
+  
 }
 
-# Remove duplicate samples from this list</code></pre>
-<div id="section" class="section level7">
-<p class="heading"></p>
-<pre class="r"><code># Find pairs of hair and fecal samples associated with the same individuals
+# Remove duplicate samples from this list
 
-#matches&lt;-data.frame(hair=c(),fecal=c())
+matches &lt;- matches %&gt;% filter(!duplicated(hair))</code></pre>
+<p>We find nearly 1500 unique individuals with paired hair and fecal
+samples meeting our criteria so far. Let’s summarize by the number of
+samples across site by species combinations and filter to those
+combinations for which 10 or more individuals are available.</p>
+<pre class="r"><code>hairMatches &lt;- matches %&gt;% 
+                left_join(hair,join_by(&quot;hair&quot;==&quot;catalogNumber&quot;)) 
 
-#for (i in 1:nrow(fecal)){
- # matchHair&lt;-hair$catalogNumber[grepl(fecal$catalogNumber[i],hair$associatedOccurrences)][1]
-  #if(is.na(matchHair)==FALSE){
-   # matches&lt;-rbind(matches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
-  #}
-#}</code></pre>
-</div>
+hairMatchSummary &lt;- hairMatches %&gt;%
+                      group_by(siteSp) %&gt;% 
+                      count() %&gt;% 
+                      filter(n&gt;=10)</code></pre>
 </div>
 
 
