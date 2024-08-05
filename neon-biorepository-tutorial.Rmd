@@ -323,5 +323,8 @@ request <- biorepo %>%
 
 We now have a list of 700 samples we could request from the NEON Biorepository via the sample request form: https://biorepo.neonscience.org/portal/misc/samplerequest.php
 
+What other ways may we want to have manipulated or subset the data for our question?
+
 We might be interested in creating a visualization for a grant proposal in which we planned to use these samples.
 
+request %>% group_by(siteID)
