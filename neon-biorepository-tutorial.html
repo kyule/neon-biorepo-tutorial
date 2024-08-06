@@ -5631,6 +5631,7 @@ Biorepository sample availability.</p>
 order to narrow research scope.</p></li>
 <li><p>Identify NEON Biorepository samples that match the research scope
 of interest using NEON Biorepository data: <a href="https://biorepo.neonscience.org" class="uri">https://biorepo.neonscience.org</a></p></li>
+<li><p>Visualize our request in an interactive map.</p></li>
 </ol>
 </div>
 <div id="research-question" class="section level2">
@@ -5786,7 +5787,7 @@ points.</p>
 cfc &lt;- NEON.cfc$cfc_carbonNitrogen
 ltr &lt;- NEON.ltr$ltr_litterCarbonNitrogen
 
-# Summarize data by year and site
+# Summarize canopy data by year and site
 
 summary.cfc &lt;- cfc %&gt;% 
               mutate(year=year(collectDate)) %&gt;% 
@@ -5809,7 +5810,9 @@ summary.cfc</code></pre>
 ##  9 DCFS    2023    22   24.2
 ## 10 DEJU    2018    45   54.4
 ## # ℹ 59 more rows</code></pre>
-<pre class="r"><code>summary.ltr &lt;- ltr %&gt;% 
+<pre class="r"><code># Summarize litter data by year and site
+
+summary.ltr &lt;- ltr %&gt;% 
               mutate(year=year(collectDate)) %&gt;% 
               group_by(siteID,year) %&gt;% 
               summarise(n=length(uid),meanCN=mean(CNratio,na.rm=TRUE)) 
@@ -5837,18 +5840,20 @@ available. To do this we need to join our datasets by site and year. We
 will then select one year of data from each of the site x year
 combinations and add a column for a new “site by year” variable.</p>
 <pre class="r"><code># Join the two summary data frames
+
 CN &lt;- full_join(summary.cfc,summary.ltr,
                   join_by(&quot;siteID&quot;==&quot;siteID&quot;,&quot;year&quot;==&quot;year&quot;),
                   suffix = c(&quot;.cfc&quot;,&quot;.ltr&quot;)) %&gt;%
                   filter(meanCN.cfc&gt;0,meanCN.ltr&gt;0)
 
-#choose the most recent year of data when sites have multiple years
+#Choose the most recent year of data when sites have multiple overlapping years
+
 CN &lt;- CN %&gt;%
-      filter(!duplicated(siteID,fromLast = TRUE)) %&gt;%
-      mutate(siteYear=paste(siteID,year,sep=&quot;.&quot;))</code></pre>
-<p>We have now identified 31 site by year combinations for which we
-would like to obtain paired mammal hair and fecal samples for further
-study! Now we will look for available samples.</p>
+        filter(!duplicated(siteID,fromLast = TRUE)) %&gt;%
+        mutate(siteYear=paste(siteID,year,sep=&quot;.&quot;))</code></pre>
+<p>We have identified 31 site by year combinations for which we would
+like to obtain paired mammal hair and fecal samples for further study!
+Now we will look for available mammal samples.</p>
 </div>
 <div id="load-and-explore-neon-biorepository-data" class="section level1">
 <h1>Load and explore NEON Biorepository data</h1>
@@ -5980,7 +5985,7 @@ Collection</strong> described here: <a href="https://biorepo.neonscience.org/por
 <p>“MAMC-FE” corresponds to the <strong>Mammal Fecal Sample
 Collection</strong> described here: <a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26" class="uri">https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26</a>).</p>
 <p>We will separate the hair and fecal samples into seperate data frames
-for ease of use</p>
+for ease of use.</p>
 <pre class="r"><code># Extract the hair and fecal samples
 
 hair &lt;- biorepo %&gt;%
@@ -6031,43 +6036,47 @@ a for loop that cycles through several thousand samples, so it may take
 a while to run.</p>
 <pre class="r"><code># Find pairs of hair and fecal samples associated with the same individuals
 
-matches &lt;- data.frame(hair=c(),fecal=c())
+sampleMatches &lt;- data.frame(hair=c(),fecal=c())
 
 for (i in 1:nrow(fecal)){
   matchHair &lt;- hair$catalogNumber[grepl(fecal$catalogNumber[i],hair$associatedOccurrences)][1]
   
   if(is.na(matchHair) == FALSE){
-    matches &lt;- rbind(matches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
+    sampleMatches &lt;- rbind(sampleMatches,data.frame(hair=matchHair,fecal=fecal$catalogNumber[i]))
   }
   
 }
 
 # Remove duplicate samples from this list
 
-matches &lt;- matches %&gt;% filter(!duplicated(hair))</code></pre>
+sampleMatches &lt;- sampleMatches %&gt;% filter(!duplicated(hair))</code></pre>
 <p>We find nearly 1500 unique individuals with paired hair and fecal
 samples meeting our criteria so far. Let’s summarize by the number of
 samples across site by species combinations and filter to those
 combinations for which 10 or more individuals are available.</p>
 <pre class="r"><code># Grab the rest of the data associated with the hair samples
 
-hairMatches &lt;- matches %&gt;% 
-                left_join(hair,join_by(&quot;hair&quot;==&quot;catalogNumber&quot;)) 
+hairMatches &lt;- sampleMatches %&gt;% 
+                    left_join(hair,join_by(&quot;hair&quot;==&quot;catalogNumber&quot;)) 
 
 
 # Filter to the combos for which we can obtain  10 or more paired samples
 
 hairMatchSummary &lt;- hairMatches %&gt;%
-                group_by(siteSp) %&gt;% 
-                count() %&gt;% 
-                filter(n&gt;=10)
+                        group_by(siteSp) %&gt;% 
+                        count() %&gt;% 
+                        filter(n&gt;=10)
                 
 # subset the matching samples
 
 hairMatches &lt;- hairMatches %&gt;%
-              filter(siteSp %in% hairMatchSummary$siteSp)
-
-# Randomly choose 10 individuals from each site by species combination
+                    filter(siteSp %in% hairMatchSummary$siteSp)</code></pre>
+</div>
+<div id="finalize-a-sample-list" class="section level1">
+<h1>Finalize a sample list</h1>
+<p>We will randomly select a sample size of 10 for each species and site
+combination.</p>
+<pre class="r"><code># Randomly choose 10 individuals from each site by species combination
 
 set.seed(85705)
 hairMatchSet &lt;-  hairMatches[sample(nrow(hairMatches)),] %&gt;%
@@ -6083,6 +6092,9 @@ request &lt;- biorepo %&gt;%
 Biorepository via the sample request form: <a href="https://biorepo.neonscience.org/portal/misc/samplerequest.php" class="uri">https://biorepo.neonscience.org/portal/misc/samplerequest.php</a></p>
 <p>What other ways may we want to have manipulated or subset the data
 for our question?</p>
+</div>
+<div id="visualize-our-request" class="section level1">
+<h1>Visualize our request</h1>
 <p>We might be interested in creating a visualization for a grant
 proposal in which we planned to use these samples.</p>
 <pre class="r"><code># Create a dataframe with the average geographic location across the selected samples and CNratio data
