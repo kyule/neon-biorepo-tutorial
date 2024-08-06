@@ -21,6 +21,8 @@ In this tutorial, we will learn how to develop a sample list to optimally answer
 
 4. Identify NEON Biorepository samples that match the research scope of interest  using NEON Biorepository data: https://biorepo.neonscience.org
 
+5. Visualize our request in an interactive map.
+
 ## Research question
 
 We are interested in testing for relationships between small mammal diet and the carbon and nitrogen stable isotope ratios in co-occurring plant communities. NEON provides extensive information about stable isotopes from samples collected from the canopy and in litter traps. While NEON does not measure small mammal diets as part of its focal protocols, NEON archives both hair and fecal samples that researchers can use to gain these insights.
@@ -49,7 +51,7 @@ Symbiota portals publish sample, specimen, and observation data following **Darw
 
 First, we want to clear out our workspace and load the required packages. If you do not have the required packages installed previously do so with the `install.packages()` function.
 
-```{r set up, message=FALSE, warning=FALSE}
+```{r load packages, message=FALSE, warning=FALSE}
 # clean out workspace
 
 # rm(list = ls()) # OPTIONAL - clear out your environment
@@ -75,7 +77,7 @@ In order to answer our question, we need to know which NEON sites and years corr
 
 The below piece of code allows you to download the data as of 2024-08-02 from the GitHub repository associated with this tutorial. We will obtain the data in this way because newly downloading data from the NEON API can be time intensive.
 
-```{r loadNeondata, message=FALSE, warning=FALSE}
+```{r load Neon data, message=FALSE, warning=FALSE}
 
 # Data required for the study of canopy foliar chemistry
 
@@ -88,7 +90,7 @@ NEON.ltr <- readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/ra
 
 The below code shows how you could download an up-to-date version of this data via the NEON API. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following link: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
 
-```{r downloadDataNew},message=FALSE}
+```{r download Data New},message=FALSE}
 
 ### source .r file with my NEON_TOKEN
 # source("my_neon_token.R") # OPTIONAL - load NEON token
@@ -111,7 +113,7 @@ The below code shows how you could download an up-to-date version of this data v
 
 Let's take a look at what is included in each NEON data product download. We will extract and focus on the table that has colated all of the records for individual traps.
 
-```{r whatsInADownload},message=FALSE,evaluate=FALSE}
+```{r investigate NEON data},message=FALSE,evaluate=FALSE}
 
 # What's in a download?
 
@@ -126,14 +128,14 @@ We can see that the data downloads for each product include several tables. The 
 
 For our purpose, we are interested in the files containing measurements of carbon and nitrogen, so we will extract those data files. Since the sampling resolution is not equivalent across data products we will summarize each of them based on the availability of carbon nitrogen ratio data in order to find the overlapping sampling points.
 
-```{r summariseData},message=FALSE,evaluate=TRUE}
+```{r extract and summarise CN data},message=FALSE,evaluate=TRUE}
 
 # Extract and rename tables of interest
 
 cfc <- NEON.cfc$cfc_carbonNitrogen
 ltr <- NEON.ltr$ltr_litterCarbonNitrogen
 
-# Summarize data by year and site
+# Summarize canopy data by year and site
 
 summary.cfc <- cfc %>% 
               mutate(year=year(collectDate)) %>% 
@@ -141,6 +143,8 @@ summary.cfc <- cfc %>%
               summarise(n=length(uid),meanCN=mean(CNratio,na.rm=TRUE))
 
 summary.cfc
+
+# Summarize litter data by year and site
 
 summary.ltr <- ltr %>% 
               mutate(year=year(collectDate)) %>% 
@@ -151,22 +155,24 @@ summary.ltr
 ```
 We can see that there are more year by site combinations for which CN ratio data exist from canopy foliage than from litter samples. Since we are interested in studying both components of the ecosystem, let's subset our data to only those instances for which both sets of data are available. To do this we need to join our datasets by site and year. We will then select one year of data from each of the site x year combinations and add a column for a new "site by year" variable.
                   
-```{r joinData},message=FALSE,evaluate=TRUE}
+```{r join cfc and ltr data},message=FALSE,evaluate=TRUE}
 
 # Join the two summary data frames
+
 CN <- full_join(summary.cfc,summary.ltr,
                   join_by("siteID"=="siteID","year"=="year"),
                   suffix = c(".cfc",".ltr")) %>%
                   filter(meanCN.cfc>0,meanCN.ltr>0)
 
-#choose the most recent year of data when sites have multiple years
+#Choose the most recent year of data when sites have multiple overlapping years
+
 CN <- CN %>%
       filter(!duplicated(siteID,fromLast = TRUE)) %>%
       mutate(siteYear=paste(siteID,year,sep="."))
 
 ```
 
-We have now identified 31 site by year combinations for which we would like to obtain paired mammal hair and fecal samples for further study! Now we will look for available samples.
+We have identified 31 site by year combinations for which we would like to obtain paired mammal hair and fecal samples for further study! Now we will look for available mammal samples.
 
 # Load and explore NEON Biorepository data
 
@@ -181,16 +187,15 @@ biorepo<-read.csv(curl("https://github.com/kyule/neon-biorepo-tutorial/raw/main/
 
 Let's look at what information is included in a Darwin Core occurrence record.
 
-```{r investigate},message=FALSE,evaluate=FALSE}
+```{r investigate a biorepo download},message=FALSE,evaluate=FALSE}
 # What variables exist for the records?
 
 names(biorepo)
 
 ```
-
 We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. For fun, let's explore the data. Try grouping or summarizing by any fields that interest you.
 
-```{r explorefields},message=FALSE,evaluate=FALSE}
+```{r summarize biorepo data},message=FALSE,evaluate=FALSE}
 # How many samples are included in the results for each collection, species, and sex?
 
 biorepo %>% 
@@ -201,7 +206,7 @@ biorepo %>%
 
 _An aside on taxonomic identifications:_ We see several different taxa represented within the results. Most samples are associated with a species-level determination. However, some small mammal species are very difficult to identify while live in the field at some sites. Therefore, some individuals are identified only to genus and others are given a "/" taxon. The latter represent uncertain identification between two species that are difficult to distinguish at a given field site. For example, individuals identified as _Peromyscus leucopus/maniculatus_ could not be confidently determined to be either _P. maniculatus_ or _P. leucopus_ in the field. We will narrow our data to only samples for which a species level identification was made below. Many specimens are also given identification qualifiers, such as "cf. species," which indicates some uncertainty in the field determination. We will ignore those notes for today, but we encourage any researcher interested in NEON small mammal samples to contact the NEON Bioreposity staff (biorepo@asu.edu) to better understand species-level identification confidence. When possible, we are often interested in collaborating with researchers on efforts to confirm identifications.
 
-```{r taxonomicSiteYear},message=FALSE,evaluate=TRUE}
+```{r filter for uncertain identification},message=FALSE,evaluate=TRUE}
 
 # Remove instances of slash identifications and determinations above the species level
 
@@ -213,7 +218,7 @@ biorepo <- biorepo %>%
 
 We want to include only samples collected from the same site x year combinations we are interested in based on CN ratio data.
 
-```{r sampleScope},message=FALSE,evaluate=TRUE}
+```{r prepare biorepo dataset},message=FALSE,evaluate=TRUE}
 
 # Create a site by year column and filter the sample results
 
@@ -230,9 +235,9 @@ Different collectionCodes correspond to different sample types.
 
 "MAMC-FE" corresponds to the **Mammal Fecal Sample Collection** described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26). 
 
-We will separate the hair and fecal samples into seperate data frames for ease of use 
+We will separate the hair and fecal samples into seperate data frames for ease of use.
 
-```{r sepCollections},message=FALSE,evaluate=TRUE}
+```{r seperate collections},message=FALSE,evaluate=TRUE}
 
 # Extract the hair and fecal samples
 
@@ -247,7 +252,7 @@ fecal <- biorepo %>%
 We see that there are a large number of samples that fit the site and year criteria of our study. We know that we want to focus on common species because we cannot fully deplete NEON Biorepository resources for future researchers (https://biorepo.neonscience.org/portal/misc/samplepolicy.php) and we want to make sure we have sufficient within species replication for our analyses (and likely have our own resource constraints!). Therefore, we can subset the available samples based on the sampling rate for different species' hair.
 
 
-```{r collectingBySpp},message=FALSE,evaluate=TRUE}
+```{r collections by species site combinations},message=FALSE,evaluate=TRUE}
 
 # Find how common different species, select the 3 most common species for each site, and add a site by species column
 
@@ -275,7 +280,7 @@ We now need to determine which fecal and hair samples are associated with the sa
 
 These urls are pipe delimited and contain the "catalogNumber" for related samples. The only relationship between  mammal hair and fecal samples in the NEON Biorepository data portal is "derivedFromSameIndividual." We will extract relationships from the "associatedOccurrences" field to create a new data frame of catalogNumbers of paired samples. The code to do this provided below is a for loop that cycles through several thousand samples, so it may take a while to run.
 
-```{r matchSamples},message=FALSE,evaluate=TRUE}
+```{r match hair and fecal samples},message=FALSE,evaluate=TRUE}
 
 # Find pairs of hair and fecal samples associated with the same individuals
 
@@ -299,26 +304,36 @@ matches <- matches %>% filter(!duplicated(hair))
 
 We find nearly 1500 unique individuals with paired hair and fecal samples meeting our criteria so far. Let's summarize by the number of samples across site by species combinations and filter to those combinations for which 10 or more individuals are available.
 
-```{r create the hair data frame},message=FALSE,evaluate=TRUE}
+```{r filter based on available sample size},message=FALSE,evaluate=TRUE}
 
 
 # Grab the rest of the data associated with the hair samples
 
 hairMatches <- matches %>% 
-                left_join(hair,join_by("hair"=="catalogNumber")) 
+                	left_join(hair,join_by("hair"=="catalogNumber")) 
 
 
 # Filter to the combos for which we can obtain  10 or more paired samples
 
 hairMatchSummary <- hairMatches %>%
-                group_by(siteSp) %>% 
-                count() %>% 
-                filter(n>=10)
+                		group_by(siteSp) %>% 
+                		count() %>% 
+                		filter(n>=10)
                 
 # subset the matching samples
 
 hairMatches <- hairMatches %>%
-              filter(siteSp %in% hairMatchSummary$siteSp)
+            		filter(siteSp %in% hairMatchSummary$siteSp)
+
+
+
+```
+
+# Finalize a sample list
+
+We will randomly select a sample size of 10 for each species and site combination.
+
+```{r choose the sample},message=FALSE,evaluate=TRUE}
 
 # Randomly choose 10 individuals from each site by species combination
 
@@ -326,12 +341,11 @@ set.seed(85705)
 hairMatchSet <-  hairMatches[sample(nrow(hairMatches)),] %>%
                 	arrange(desc(siteSp)) %>% group_by(siteSp) %>% 
                 	slice(1:10)
-
 ```
 
 We now want to create a data frame representing the full list of samples we would like to request for our project.
 
-```{r request},message=FALSE,evaluate=TRUE}
+```{r full request},message=FALSE,evaluate=TRUE}
 
 # Filter the full data sets to those involved in the request of interest
 
@@ -345,8 +359,9 @@ We now have a list of 700 samples we could request from the NEON Biorepository v
 
 What other ways may we want to have manipulated or subset the data for our question?
 
-We might be interested in creating a visualization for a grant proposal in which we planned to use these samples. 
+# Visualize our request
 
+We might be interested in creating a visualization for a grant proposal in which we planned to use these samples. 
 
 ```{r visualize},message=FALSE,evaluate=TRUE}
 
