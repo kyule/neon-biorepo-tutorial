@@ -59,6 +59,9 @@ First, we want to clear out our workspace and load the required packages. If you
 library(tidyverse)
 library(neonUtilities)
 library(curl)
+library(leaflet)
+library(leaflet.minicharts)
+library(viridis)
 
 ```
 
@@ -291,16 +294,35 @@ for (i in 1:nrow(fecal)){
 
 matches <- matches %>% filter(!duplicated(hair))
 
+
 ```
 
 We find nearly 1500 unique individuals with paired hair and fecal samples meeting our criteria so far. Let's summarize by the number of samples across site by species combinations and filter to those combinations for which 10 or more individuals are available.
 
 ```{r create the hair data frame},message=FALSE,evaluate=TRUE}
 
+
+# Grab the rest of the data associated with the hair samples
+
+hairMatches <- matches %>% 
+                left_join(hair,join_by("hair"=="catalogNumber")) 
+
+
+# Filter to the combos for which we can obtain  10 or more paired samples
+
+hairMatchSummary <- hairMatches %>%
+                group_by(siteSp) %>% 
+                count() %>% 
+                filter(n>=10)
+                
+# subset the matching samples
+
+hairMatches <- hairMatches %>%
+              filter(siteSp %in% hairMatchSummary$siteSp)
+
 # Randomly choose 10 individuals from each site by species combination
 
 set.seed(85705)
-
 hairMatchSet <-  hairMatches[sample(nrow(hairMatches)),] %>%
                 	arrange(desc(siteSp)) %>% group_by(siteSp) %>% 
                 	slice(1:10)
@@ -316,8 +338,6 @@ We now want to create a data frame representing the full list of samples we woul
 request <- biorepo %>%
                 filter(catalogNumber %in% c(hairMatchSet$hair,hairMatchSet$fecal))
 
-
-
 ```
 
 
@@ -325,6 +345,43 @@ We now have a list of 700 samples we could request from the NEON Biorepository v
 
 What other ways may we want to have manipulated or subset the data for our question?
 
-We might be interested in creating a visualization for a grant proposal in which we planned to use these samples.
+We might be interested in creating a visualization for a grant proposal in which we planned to use these samples. 
 
-request %>% group_by(siteID)
+
+```{r visualize},message=FALSE,evaluate=TRUE}
+
+# Create a dataframe with the average geographic location across the selected samples and CNratio data
+
+mapSummary <- hairMatchSet %>%
+				group_by(siteID) %>% 
+				summarise(lat=mean(decimalLatitude),lng=mean(decimalLongitude)) %>% 					left_join(CN,join_by("siteID"=="siteID"))
+
+# Add the genus to this data frame
+
+mapSummaryWithGenus <- hairMatchSet %>%
+						group_by(siteID,genus) %>%
+						count() %>%
+						left_join(mapSummary,join_by("siteID"=="siteID")) %>% 
+						spread(genus, n)
+						
+# Create a base map
+
+basemap <- leaflet() %>% 
+				addTiles() %>%
+				addProviderTiles(providers$CartoDB.PositronNoLabels) %>% 
+				setView(lng = -96.25, lat = 38, zoom = 3.25)
+
+# Add "minicharts" to plot genera and CNRatio of canopy foliage
+
+genusByCN <- basemap %>% 
+				  addMinicharts(mapSummaryWithGenus$lng, mapSummaryWithGenus$lat,
+				  type ='pie',
+				  chartdata = mapSummaryWithGenus[,10:14],
+				  width = mapSummaryWithGenus$meanCN.cfc/3)
+
+genusByCN
+
+```
+
+Be sure to move the map around to see Alaska, too. We can see that _Peromyscus_ is by far the most common genus in the sample set. However, we also have a great representation of _Peromyscus_ across the CN ratio spectrum. Should we decide to rescope our question to focus on _Peromyscus_ species?  
+
