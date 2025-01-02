@@ -27,7 +27,7 @@ In this tutorial, we will learn how to develop a sample list to optimally answer
 
 ## Research question
 
-We are interested in testing for relationships between the diet of deer mice and the carbon and nitrogen stable isotope ratios in co-occurring plant communities in the Mid-Atlantic United States. NEON provides extensive information about stable isotopes from samples collected from the canopy and in litter traps. While NEON does not measure small mammal diets as part of its focal protocols, NEON archives both hair and fecal samples that researchers can use to gain these insights.
+We are interested in testing for relationships between the diet of small mammals and the carbon and nitrogen stable isotope ratios in co-occurring plant communities in the Northeastern United States. NEON provides extensive information about stable isotopes from samples collected from the canopy and in litter traps. While NEON does not measure small mammal diets as part of its focal protocols, NEON archives both hair and fecal samples that researchers can use to gain these insights.
 
 **What samples from the NEON Biorepository can be requested in order to conduct this study?** 
 
@@ -97,7 +97,7 @@ In order to answer our question, we need to know which NEON sites and years corr
 
 **NEON Litterfall and fine woody debris production and chemistry:** <a href="https://data.neonscience.org/data-products/DP1.10033.001" target="_blank">DP1.10033.001</a>
 
-Because we are interested in  the Mid-Atlantic United States, we will subset the avalilable data to sites in NEON Domain 02: BLAN, SCBI, and SERC.
+Because we are interested in  the Northeaster United States, we will subset the avalilable data to sites in NEON Domain 01: BART and HARV.
 
 This download may take a few minutes. While not required, it is recommended that you use a <a href="https://www.neonscience.org/resources/learning-hub/tutorials/neon-api-tokens-tutorial" target="_blank">NEON API token</a> to achieve faster download speeds.
 
@@ -109,13 +109,13 @@ Note that we have chosen to include <a href="https://www.neonscience.org/resourc
  NEON.cfc <- loadByProduct(dpID="DP1.10026.001",
                     package="expanded",
                     include.provisional=TRUE,
-                    site=c('BLAN','SCBI','SERC'),
+                    site=c('BART','HARV'),
                     check.size=FALSE)
  
  NEON.ltr <- loadByProduct(dpID="DP1.10033.001",
                     package="expanded",
                     include.provisional=TRUE,
-                    site=c('BLAN','SCBI','SERC'),
+                    site=c('BART','HARV'),
                     check.size=FALSE)
 ```
 
@@ -175,11 +175,9 @@ CN <- full_join(summary.cfc,summary.ltr,
 ```
 
 
-We will then select one year of data from each of the site x year combinations and add a column for a new "site by year" variable.
+We will then select the most recent year of data from each of the site x year combinations and add a column for a new "site by year" variable.
                   
 ```{r join cfc and ltr data},message=FALSE,evaluate=TRUE}
-
-#Choose the most recent year of data when sites have multiple overlapping years
 
 CN <- CN %>%
     	filter(!duplicated(siteID,fromLast = TRUE)) %>%
@@ -187,13 +185,13 @@ CN <- CN %>%
 
 ```
 
-We have identified 3 site by year combinations for which we would like to obtain paired mammal hair and fecal samples for further study! Now we will look for available mammal samples.
+We have identified 2 site by year combinations for which we would like to obtain paired mammal hair and fecal samples for further study! Now we will look for available mammal samples.
 
 # Load and explore NEON Biorepository data
 
-Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the <a href="https://github.com/kyule/neon-biorepo-tutorial" target="_blank">Github repository</a> associated with this tutorial. This represents all _Peromyscus_ hair and fecal samples from Domain 02 archived at the NEON Biorepository.
+Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the <a href="https://github.com/kyule/neon-biorepo-tutorial" target="_blank">Github repository</a> associated with this tutorial. This represents all small mammal hair and fecal samples from Domain 01 archived at the NEON Biorepository.
 
-Up to date results for the same search terms can be found at any time <a href="https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&datasetid=13&includeothercatnum=1&taxa=Peromyscus&usethes=1&taxontype=1" target="_blank">here</a>. 
+Up to date results for the same search terms can be found at any time <a href="https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&datasetid=2&includeothercatnum=1&usethes=1&taxontype=1" target="_blank">here</a>. 
 
 
 ```{r load data, message=FALSE, warning=FALSE}
@@ -202,14 +200,15 @@ biorepo<-read.csv(curl("https://github.com/kyule/neon-biorepo-tutorial/raw/main/
 
 ```
 
-Let's look at what information is included in a Darwin Core occurrence record.
+Let's look at what information is included in a Darwin Core occurrence record. What variables exist in the records?
 
 ```{r investigate a biorepo download},message=FALSE,evaluate=FALSE}
-# What variables exist for the records?
+
 
 names(biorepo)
 
 ```
+
 We see that a large number of Darwin Core fields are present in the results that outline the who, what, where, when, and more of each sample. For fun, let's explore the data. Try grouping or summarizing by any fields that interest you.
 
 ```{r summarize biorepo data},message=FALSE,evaluate=FALSE}
@@ -225,8 +224,6 @@ _An aside on taxonomic identifications:_ We see several different taxa represent
 
 ```{r filter for uncertain identification},message=FALSE,evaluate=TRUE}
 
-# Remove instances of slash identifications and determinations above the species level
-
 biorepo <- biorepo %>% 
               filter(!grepl("/",scientificName),!is.na(specificEpithet))
 
@@ -234,11 +231,9 @@ biorepo <- biorepo %>%
 
 # Narrow the results to a set of samples that fits our research question
 
-We want to include only samples collected from the same site x year combinations we are interested in based on CN ratio data.
+We want to include only samples collected from the same site by year combinations we are interested in based on CN ratio data, so we create a site by year column and filter the results.
 
 ```{r prepare biorepo dataset},message=FALSE,evaluate=TRUE}
-
-# Create a site by year column and filter the sample results
 
 biorepo <- biorepo %>% 
               mutate(siteID=substr(locationID,1,4)) %>% 
@@ -249,9 +244,12 @@ biorepo <- biorepo %>%
 
 Different collectionCodes correspond to different sample types. 
 
-"MAMC-HA" corresponds to the **Mammal Hair Sample Collection** described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27). 
+"MAMC-HA" corresponds to the
+<a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=27" target="_blank">Mammal Hair Sample Collection</a>.
 
-"MAMC-FE" corresponds to the **Mammal Fecal Sample Collection** described here: https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26). 
+
+"MAMC-FE" corresponds to the 
+<a href="https://biorepo.neonscience.org/portal/collections/misc/collprofiles.php?collid=26" target="_blank">Mammal Fecal Sample Collection</a>.
 
 We will separate the hair and fecal samples into seperate data frames for ease of use.
 
