@@ -1,12 +1,14 @@
 ---
 title: "NEON Biorepository Data Tutorial"
 author: "Kelsey Yule"
-date: "2024-08-02"
+date: "2025-01-02"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
 ```
 
 ## Learning Objectives
@@ -19,13 +21,13 @@ In this tutorial, we will learn how to develop a sample list to optimally answer
 
 3. Compare NEON data availability across multiple data products in order to narrow research scope.
 
-4. Identify NEON Biorepository samples that match the research scope of interest  using NEON Biorepository data: https://biorepo.neonscience.org
+4. Identify NEON Biorepository samples that match the research scope of interest using <a href="https://biorepo.neonscience.org/portal/index.php" target="_blank">NEON Biorepository</a> data.
 
 5. Visualize our request in an interactive map.
 
 ## Research question
 
-We are interested in testing for relationships between small mammal diet and the carbon and nitrogen stable isotope ratios in co-occurring plant communities. NEON provides extensive information about stable isotopes from samples collected from the canopy and in litter traps. While NEON does not measure small mammal diets as part of its focal protocols, NEON archives both hair and fecal samples that researchers can use to gain these insights.
+We are interested in testing for relationships between the diet of deer mice and the carbon and nitrogen stable isotope ratios in co-occurring plant communities in the Mid-Atlantic United States. NEON provides extensive information about stable isotopes from samples collected from the canopy and in litter traps. While NEON does not measure small mammal diets as part of its focal protocols, NEON archives both hair and fecal samples that researchers can use to gain these insights.
 
 **What samples from the NEON Biorepository can be requested in order to conduct this study?** 
 
@@ -43,72 +45,78 @@ We will attempt to develop a list of samples following these criteria:
 
 The NEON Biorepository is located at Arizona State University and serves as the primary repository for NEON samples and specimens collected across all 81 NEON field sites. 
 
-The NEON Biorepository data portal allows users to search and download records associated with NEON samples and specimens, request samples and specimens for research, and publish sample-associated data. The NEON Biorepository data portal is built on open-source **Symbiota** software. **Symbiota** is the most frequently used software in North America for managing natural history collections records. Learn more about **Symbiota** data portals at https://symbiota.org/
+The NEON Biorepository data portal allows users to search and download records associated with NEON samples and specimens, request samples and specimens for research, and publish sample-associated data. The NEON Biorepository data portal is built on open-source <a href="https://symbiota.org" target="_blank">Symbiota</a> software. **Symbiota** is the most frequently used software in North America for managing natural history collections records.
 
-Symbiota portals publish sample, specimen, and observation data following **Darwin Core Standard** developed by Biodiversity Information Standards (TDWG). This data standard is a stable, straightforward, and flexible framework for compiling biodiversity data from varied sources. Learn more at https://dwc.tdwg.org/
+Symbiota portals publish sample, specimen, and observation data following the <a href="https://dwc.tdwg.org/" target="_blank">Darwin Core Standard</a> developed by Biodiversity Information Standards (TDWG). This data standard is a stable, straightforward, and flexible framework for compiling biodiversity data from varied sources.
 
 ## Getting Started
 
-First, we want to clear out our workspace and load the required packages. If you do not have the required packages installed previously do so with the `install.packages()` function.
+You may want to clean your R environment before we begin.
 
-```{r load packages, message=FALSE, warning=FALSE}
+```{r clean environment, message=FALSE, warning=FALSE, evaluate=FALSE}
 # clean out workspace
 
-# rm(list = ls()) # OPTIONAL - clear out your environment
+rm(list = ls()) 
 
-# load packages
+```
+
+If you do not have the required packages installed previously, use the `install.packages()` function to do so.
+
+```{r install packages, message=FALSE, warning=FALSE,evaluate=FALSE}
+
+install.packages('tidyverse')
+install.packages('neonUtilities')
+install.packages('curl')
+install.packages('leaflet')
+install.packages('leaflet.minicharts')
+install.packages('lubridate')
+install.packages('viridis')
+
+```
+
+Otherwise, simply load the packages.
+
+```{r load packages, message=FALSE, warning=FALSE}
 
 library(tidyverse)
 library(neonUtilities)
 library(curl)
 library(leaflet)
 library(leaflet.minicharts)
+library(lubridate)
 library(viridis)
 
 ```
 
 ## Obtain relevant NEON Terrestrial Observation System data
 
-In order to answer our question, we need to know which NEON sites and years correspond to available carbon and nitrogen stable isotope data for canopy foliage and litter samples. We will use the `neonUtilities` package to download all of the data from these two data products from the main NEON data portal. This requires that we know the NEON data product IDs for each relevant data product. 
+In order to answer our question, we need to know which NEON sites and years correspond to available carbon and nitrogen stable isotope data for canopy foliage and litter samples. We will use the `loadByProduct()` function in the
+`neonUtilities` package to download all of the data from these two data products from the main NEON data portal. This requires that we know the NEON data product IDs for each relevant data product. 
 
-**NEON Plant Foliar Traits:** "DP1.10026.001" described at  https://data.neonscience.org/data-products/DP1.10026.001
+**NEON Plant Foliar Traits:** <a href="https://data.neonscience.org/data-products/DP1.10026.001" target="_blank">DP1.10026.001</a> 
 
-**NEON Litterfall and fine woody debris production and chemistry:** "DP1.10033.001" described at  https://data.neonscience.org/data-products/DP1.10033.001
+**NEON Litterfall and fine woody debris production and chemistry:** <a href="https://data.neonscience.org/data-products/DP1.10033.001" target="_blank">DP1.10033.001</a>
 
-The below piece of code allows you to download the data as of 2024-08-02 from the GitHub repository associated with this tutorial. We will obtain the data in this way because newly downloading data from the NEON API can be time intensive.
+Because we are interested in  the Mid-Atlantic United States, we will subset the avalilable data to sites in NEON Domain 02: BLAN, SCBI, and SERC.
 
-```{r load Neon data, message=FALSE, warning=FALSE}
+This download may take a few minutes. While not required, it is recommended that you use a <a href="https://www.neonscience.org/resources/learning-hub/tutorials/neon-api-tokens-tutorial" target="_blank">NEON API token</a> to achieve faster download speeds.
 
-# Data required for the study of canopy foliar chemistry
+Note that we have chosen to include <a href="https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial" target="_blank">Provisional data</a> for this exploratory analysis of sample and data availability. If you are interested in ensuring repeatability of analysis results, you should limit your download to Release data. 
 
-NEON.cfc <- readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_cfc.Rdata")))
 
-# Data required for the study of litter chemistry
+```{r download Data New},message=FALSE,evaluate=FALSE}
 
-NEON.ltr <- readRDS(gzcon(url("https://github.com/kyule/neon-biorepo-tutorial/raw/main/NEON_ltr.Rdata")))
-```
-
-The below code shows how you could download an up-to-date version of this data via the NEON API. Note that we have chosen to include Provisional data for this exploratory analysis. To learn more about Release vs. Provisional NEON data and ensure that you choose the appropriate data for your purposes, visit the following link: https://www.neonscience.org/resources/learning-hub/tutorials/release-provisional-tutorial.
-
-```{r download Data New},message=FALSE}
-
-### source .r file with my NEON_TOKEN
-# source("my_neon_token.R") # OPTIONAL - load NEON token
-# See: https://www.neonscience.org/neon-api-tokens-tutorial
-
-### Use the loadByProduct function. Use ?loadByProduct to view the many other options that can be specified
-
- #NEON.cfc <- loadByProduct(dpID="DP1.10026.001",
-                    #package="expanded",
-                    #include.provisional=TRUE,
-                    #check.size=FALSE,
-                    #token=Neon_Token)
+ NEON.cfc <- loadByProduct(dpID="DP1.10026.001",
+                    package="expanded",
+                    include.provisional=TRUE,
+                    site=c('BLAN','SCBI','SERC'),
+                    check.size=FALSE)
  
- #NEON.ltr <- loadByProduct(dpID="DP1.10033.001",
-                    #include.provisional=TRUE,
-                    #check.size=FALSE,
-                    #token=Neon_Token)
-
+ NEON.ltr <- loadByProduct(dpID="DP1.10033.001",
+                    package="expanded",
+                    include.provisional=TRUE,
+                    site=c('BLAN','SCBI','SERC'),
+                    check.size=FALSE)
 ```
 
 Let's take a look at what is included in each NEON data product download. We will extract and focus on the table that has colated all of the records for individual traps.
@@ -126,16 +134,18 @@ We can see that the data downloads for each product include several tables. The 
 
 # Narrow the spatial and temporal scope based on available data
 
-For our purpose, we are interested in the files containing measurements of carbon and nitrogen, so we will extract those data files. Since the sampling resolution is not equivalent across data products we will summarize each of them based on the availability of carbon nitrogen ratio data in order to find the overlapping sampling points.
+For our purpose, we are interested in the files containing measurements of carbon and nitrogen, so we will extract those data tables.
 
-```{r extract and summarise CN data},message=FALSE,evaluate=TRUE}
-
-# Extract and rename tables of interest
+```{r extract CN data},message=FALSE,evaluate=TRUE}
 
 cfc <- NEON.cfc$cfc_carbonNitrogen
 ltr <- NEON.ltr$ltr_litterCarbonNitrogen
 
-# Summarize canopy data by year and site
+```
+
+We will summarize the available data to find of year by site combinations for which both foliar and litter chemistry measurements are available.
+
+```{r summarise CN data},message=FALSE,evaluate=TRUE}
 
 summary.cfc <- cfc %>% 
               mutate(year=year(collectDate)) %>% 
@@ -144,7 +154,6 @@ summary.cfc <- cfc %>%
 
 summary.cfc
 
-# Summarize litter data by year and site
 
 summary.ltr <- ltr %>% 
               mutate(year=year(collectDate)) %>% 
@@ -153,16 +162,22 @@ summary.ltr <- ltr %>%
 summary.ltr
 
 ```
-We can see that there are more year by site combinations for which CN ratio data exist from canopy foliage than from litter samples. Since we are interested in studying both components of the ecosystem, let's subset our data to only those instances for which both sets of data are available. To do this we need to join our datasets by site and year. We will then select one year of data from each of the site x year combinations and add a column for a new "site by year" variable.
-                  
-```{r join cfc and ltr data},message=FALSE,evaluate=TRUE}
 
-# Join the two summary data frames
+We can see that there are more year by site combinations for which CN ratio data exist from canopy foliage than from litter samples. Since we are interested in studying both components of the ecosystem, let's subset our data to only those instances for which both sets of data are available. To do this we need to join our datasets by site and year. 
+
+```{r join cfc and ltr data},message=FALSE,evaluate=TRUE}
 
 CN <- full_join(summary.cfc,summary.ltr,
                   join_by("siteID"=="siteID","year"=="year"),
                   suffix = c(".cfc",".ltr")) %>%
                   filter(meanCN.cfc>0,meanCN.ltr>0)
+
+```
+
+
+We will then select one year of data from each of the site x year combinations and add a column for a new "site by year" variable.
+                  
+```{r join cfc and ltr data},message=FALSE,evaluate=TRUE}
 
 #Choose the most recent year of data when sites have multiple overlapping years
 
@@ -172,14 +187,14 @@ CN <- CN %>%
 
 ```
 
-We have identified 31 site by year combinations for which we would like to obtain paired mammal hair and fecal samples for further study! Now we will look for available mammal samples.
+We have identified 3 site by year combinations for which we would like to obtain paired mammal hair and fecal samples for further study! Now we will look for available mammal samples.
 
 # Load and explore NEON Biorepository data
 
-Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the Github repository https://github.com/kyule/neon-biorepo-tutorial and represent a search for all small mammal hair and fecal samples collected in 2018-2023 and archived at the NEON Biorepository as of 2024-08-02.
+Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the <a href="https://github.com/kyule/neon-biorepo-tutorial" target="_blank">Github repository</a> associated with this tutorial. This represents all _Peromyscus_ hair and fecal samples archived at the NEON Biorepository from BLAN, SCBI, and SERC
 
-Up to date results for the same search terms can be found at any time using the link: 
-https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&includeothercatnum=1&eventdate1=2018-01-01&eventdate2=2023-12-31&usethes=1&taxontype=1&availableforloan=1
+Up to date results for the same search terms can be found at any time <a href="https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&datasetid=13&includeothercatnum=1&taxa=Peromyscus&usethes=1&taxontype=1" target="_blank">here</a>. 
+
 
 ```{r load data, message=FALSE, warning=FALSE}
 
