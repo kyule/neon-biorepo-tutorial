@@ -191,14 +191,14 @@ We have identified 3 site by year combinations for which we would like to obtain
 
 # Load and explore NEON Biorepository data
 
-Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the <a href="https://github.com/kyule/neon-biorepo-tutorial" target="_blank">Github repository</a> associated with this tutorial. This represents all _Peromyscus_ hair and fecal samples archived at the NEON Biorepository from BLAN, SCBI, and SERC
+Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the <a href="https://github.com/kyule/neon-biorepo-tutorial" target="_blank">Github repository</a> associated with this tutorial. This represents all _Peromyscus_ hair and fecal samples from Domain 02 archived at the NEON Biorepository.
 
 Up to date results for the same search terms can be found at any time <a href="https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&datasetid=13&includeothercatnum=1&taxa=Peromyscus&usethes=1&taxontype=1" target="_blank">here</a>. 
 
 
 ```{r load data, message=FALSE, warning=FALSE}
 
-biorepo<-read.csv(curl("https://github.com/kyule/neon-biorepo-tutorial/raw/main/biorepoOccurrences_FecalAndHairSamples_20240802.csv"))
+biorepo<-read.csv(curl("https://github.com/kyule/neon-biorepo-tutorial/raw/main/biorepoOccurrences_FecalAndHairSamples_20250102.csv"))
 
 ```
 
