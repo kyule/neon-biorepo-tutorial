@@ -27,7 +27,7 @@ In this tutorial, we will learn how to develop a sample list to optimally answer
 
 ## Research question
 
-We are interested in testing for relationships between the diet of small mammals and the carbon and nitrogen stable isotope ratios in co-occurring plant communities in the Northeastern United States. NEON provides extensive information about stable isotopes from samples collected from the canopy and in litter traps. While NEON does not measure small mammal diets as part of its focal protocols, NEON archives both hair and fecal samples that researchers can use to gain these insights.
+We are interested in testing for relationships between the diet of small mammals and the carbon and nitrogen stable isotope ratios in co-occurring plant communities in a portion of the eastern United States. NEON provides extensive information about stable isotopes from samples collected from the canopy and in litter traps. While NEON does not measure small mammal diets as part of its focal protocols, NEON archives both hair and fecal samples that researchers can use to gain these insights.
 
 **What samples from the NEON Biorepository can be requested in order to conduct this study?** 
 
@@ -95,7 +95,7 @@ In order to answer our question, we need to know which NEON sites and years corr
 
 **NEON Litterfall and fine woody debris production and chemistry:** <a href="https://data.neonscience.org/data-products/DP1.10033.001" target="_blank">DP1.10033.001</a>
 
-Because we are interested in  the Northeastern United States, we will subset the available data to sites in NEON Domain 01: BART and HARV.
+Because we are interested in the a portion of the eastern United States, we will subset the available data to sites in NEON Domains 1, 2, and 7.
 
 This download may take a few minutes. While not required, it is recommended that you use a <a href="https://www.neonscience.org/resources/learning-hub/tutorials/neon-api-tokens-tutorial" target="_blank">NEON API token</a> to achieve faster download speeds. For the tutorial, we specify that we are only interested in the carbon nitrogen data tables  However, it is recommended that researchers familiarize themselves with all tables in a given data product.
 
@@ -188,7 +188,7 @@ We have identified 2 site by year combinations for which we would like to obtain
 
 Here, we read in a csv file of occurrence records downloaded from the NEON Biorepository data portal. The results are located in the <a href="https://github.com/kyule/neon-biorepo-tutorial" target="_blank">Github repository</a> associated with this tutorial. This represents all small mammal hair and fecal samples from Domain 01 archived at the NEON Biorepository.
 
-Up to date results for the same search terms can be found at any time <a href="https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&datasetid=2%2C13&includeothercatnum=1&usethes=1&taxontype=1" target="_blank">here</a>. 
+Up to date results for the same search terms can be found at any time <a href="https://biorepo.neonscience.org/portal/collections/list.php?db=26%2C27&datasetid=2%2C13%2C8&includeothercatnum=1&usethes=1&taxontype=1" target="_blank">here</a>. 
 
 
 ```{r load data, message=FALSE, warning=FALSE,eval=TRUE}
@@ -392,7 +392,6 @@ We might be interested in creating a visualization for a grant proposal in which
 
 To map our samples, let's first create a dataframe with the average geographic location across the selected samples and the CN ratio data.
 
-
 				
 ```{r map summary},message=FALSE,eval=TRUE}
 
@@ -423,13 +422,13 @@ Create a base map for our data and add minicharts of the species and CN ratio of
 basemap <- leaflet() %>% 
 				addTiles() %>%
 				addProviderTiles(providers$CartoDB.PositronNoLabels) %>% 
-				setView(lng = -70, lat = 42, zoom = 6)
+				setView(lng = -75, lat = 42, zoom = 5)
 
 speciesByCN <- basemap %>% 
 				  addMinicharts(mapSummaryWithSpecies$lng, mapSummaryWithSpecies$lat,
 				  type ='pie',
-				  chartdata = mapSummaryWithSpecies[,10:11],
-				  width = mapSummaryWithSpecies$meanCN.cfc/3)
+				  chartdata = mapSummaryWithSpecies[,10:12],
+				  width = mapSummaryWithSpecies$meanCN.cfc/2)
 
 speciesByCN
 
